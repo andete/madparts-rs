@@ -46,9 +46,10 @@ fn run() -> Result<(), MpError> {
 
     let filename = matches.value_of("INPUT").unwrap();
     let filepath:PathBuf = Path::new(&filename).into();
+    info!("Filename: {}", filepath.display());
+    
     let filedir:PathBuf = filepath.parent().unwrap().into();
-
-    info!("Filename: {}, Dir: {}", filepath.display(), filedir.display());
+    info!("Dir: {}", filedir.display());
 
     if let Err(err) = gtk::init() {
         error!("Failed to initialize GTK.");
@@ -63,13 +64,9 @@ fn run() -> Result<(), MpError> {
         },
     };
 
-    // close_write,moved_to,create
-    let create_watch = |i:&mut Inotify,f:&Path| {
-        i.add_watch(&f, WatchMask::CREATE | WatchMask::MOVED_TO | WatchMask::CLOSE_WRITE).unwrap()
-    };
+    // close_write,moved_to,create indicate the file was possibly messed with
+    let _file_watch = ino.add_watch(&filedir, WatchMask::CREATE | WatchMask::MOVED_TO | WatchMask::CLOSE_WRITE).unwrap();
     
-    let mut file_watch = Some(create_watch(&mut ino, &filedir));
-
     let (window, statusbar, input_buffer, exit) = gui::make_gui(&filename);
     
     let update_input = Arc::new(AtomicBool::new(true));
@@ -78,17 +75,12 @@ fn run() -> Result<(), MpError> {
         let mut buffer = [0; 1024];
         for event in ino.read_events(&mut buffer).unwrap() {
             let mut modified = false;
-            if let Some(ref _fw) = file_watch {
-                if event.name == filepath.file_name() {
-                    debug!("modified!");
-                    modified = true;
-                }
+            if event.name == filepath.file_name() {
+                debug!("modified!");
+                modified = true;
             }
             if modified {
                 update_input_timeout_loop.store(true, Ordering::SeqCst);
-                let fw = file_watch.take().unwrap();
-                ino.rm_watch(fw).unwrap();
-                file_watch = Some(create_watch(&mut ino, &filedir));
                 break;
             }
         }
