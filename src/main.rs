@@ -46,7 +46,7 @@ fn run() -> Result<(), MpError> {
         .get_matches();
 
     let filename = matches.value_of("INPUT").unwrap();
-    let filepath:PathBuf = Path::new(&filename).into();
+    let filepath:PathBuf = Path::new(&filename).canonicalize().unwrap();
     info!("Filename: {}", filepath.display());
     
     let filedir:PathBuf = filepath.parent().unwrap().into();
