@@ -6,6 +6,7 @@ extern crate cpython;
 extern crate env_logger;
 
 extern crate gdk_pixbuf;
+extern crate gio;
 extern crate glib;
 extern crate gtk;
 

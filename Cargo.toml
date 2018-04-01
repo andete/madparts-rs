@@ -6,14 +6,15 @@ license = "MIT/Apache-2.0"
 repository = "https://github.com/andete/madparts/tree/rust"
 
 [dependencies.gtk]
-version = "0.3"
+version = "0.4"
 features = ["v3_10"]
 
 [dependencies]
-glib = "0.4"
-gdk = "0.7"
-gdk-pixbuf = "0.3"
-cairo-rs = "0.3"
+glib = "0.5"
+gdk = "0.8"
+gdk-pixbuf = "0.4"
+gio = "0.4"
+cairo-rs = "0.4"
 inotify = "0.5"
 range = "0.3"
 cpython = "0.1"

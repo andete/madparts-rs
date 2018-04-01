@@ -5,12 +5,16 @@ use gtk::prelude::*;
 use gtk::{AboutDialog, Menu, MenuBar, MenuItem, DrawingArea, Statusbar};
 use gtk::{Notebook, Label, TextView, TextBuffer, ScrolledWindow, Window};
 use gdk_pixbuf::Pixbuf;
+use gio::MemoryInputStream;
+use glib::Bytes;
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use util;
 use ::VERSION;
+
+const ICON:&'static str = include_str!("../media/icon.svg");
 
 pub fn make_gui(filename: &str) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>) {
 
@@ -66,7 +70,8 @@ pub fn make_gui(filename: &str) -> (Window, Statusbar, TextBuffer, Arc<AtomicBoo
         about.set_version(Some(VERSION));
         about.set_website(Some("http://madparts.org/"));
         about.set_website_label(Some("madparts"));
-        let logo = Pixbuf::new_from_file_at_size("../media/icon.svg", 64, 64).unwrap();
+        let stream = MemoryInputStream::new_from_bytes(&Bytes::from_static(ICON.as_bytes()));
+        let logo = Pixbuf::new_from_stream_at_scale(&stream, 64, 64, true, None).unwrap();
         about.set_logo(Some(&logo));
         about
     };
