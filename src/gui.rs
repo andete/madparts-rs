@@ -1,5 +1,6 @@
 // (c) 2018 Joost Yervante Damad <joost@damad.be>
 
+use cairo;
 use gtk;
 use gtk::prelude::*;
 use gtk::{AboutDialog, Menu, MenuBar, MenuItem, DrawingArea, Statusbar};
@@ -15,6 +16,18 @@ use util;
 use ::VERSION;
 
 const ICON:&'static str = include_str!("../media/icon.svg");
+
+fn draw_fn(area:&DrawingArea, cr:&cairo::Context) -> Inhibit {
+    let w:f64 = area.get_allocated_width().into();
+    let h:f64 = area.get_allocated_height().into();
+    // it's possible to scale cleverly before drawing ;) TODO
+    // cr.scale(500f64, 500f64);
+    cr.move_to(0.0,0.0);
+    cr.set_line_width(1.0);
+    cr.line_to(w,h);
+    cr.stroke();
+    Inhibit(false)
+}
 
 pub fn make_gui(filename: &str) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>) {
 
@@ -100,6 +113,8 @@ pub fn make_gui(filename: &str) -> (Window, Statusbar, TextBuffer, Arc<AtomicBoo
     let view = DrawingArea::new();
     notebook.append_page(&view,Some(&Label::new(Some("view"))));
 
+    view.connect_draw(draw_fn);
+    
     let statusbar = Statusbar::new();
     statusbar.push(0, "Ready.");
     v_box.pack_start(&statusbar, false, false, 0);
