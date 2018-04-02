@@ -2,8 +2,8 @@
 
 extern crate cairo;
 extern crate clap;
-extern crate cpython;
 extern crate env_logger;
+extern crate pyo3;
 
 extern crate gdk_pixbuf;
 extern crate gio;
@@ -24,13 +24,15 @@ use clap::{Arg, App};
 
 use inotify::{WatchMask, Inotify};
 
-use cpython::Python;
+use pyo3::{Python, ObjectProtocol};
 
 use gtk::{WidgetExt, StatusbarExt, TextBufferExt};
 
 use error::MpError;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
+const PRELUDEPY:&'static str = include_str!("prelude.py");
 
 fn run() -> Result<(), MpError> {
     std::env::set_var("RUST_LOG","debug");
@@ -94,9 +96,11 @@ fn run() -> Result<(), MpError> {
     let py = gil.python();
 
     let sys = py.import("sys")?;
-    let version: String = sys.get(py, "version")?.extract(py)?;
+    let version: String = sys.get( "version")?.extract()?;
     
     info!("using python: {}", version);
+    
+    py.run(PRELUDEPY,None,None).unwrap(); // TODO
     
     loop {
         {
@@ -113,6 +117,7 @@ fn run() -> Result<(), MpError> {
             trace!("updated");
             py.run(&data,None,None).unwrap(); // TODO
             let res = py.eval("footprint()", None,None).unwrap();
+            //let res:PyList = res.extract(py).unwrap();
             info!("res: {:?}", res);
         }
     }

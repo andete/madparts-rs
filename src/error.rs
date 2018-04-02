@@ -3,7 +3,7 @@
 use std::io;
 
 use glib;
-use cpython;
+use pyo3;
 
 // TODO: use failure crate
 
@@ -26,8 +26,8 @@ impl From<io::Error> for MpError {
     }
 }
 
-impl From<cpython::PyErr> for MpError {
-    fn from(e: cpython::PyErr) -> MpError {
+impl From<pyo3::PyErr> for MpError {
+    fn from(e: pyo3::PyErr) -> MpError {
         MpError::Python(format!("{:?}", e))
     }
 }
