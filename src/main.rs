@@ -1,4 +1,5 @@
 // (c) 2016-2018 Joost Yervante Damad <joost@damad.be>
+#![feature(proc_macro, specialization, const_fn)]
 
 extern crate cairo;
 extern crate clap;
@@ -24,7 +25,7 @@ use clap::{Arg, App};
 
 use inotify::{WatchMask, Inotify};
 
-use pyo3::{Python, ObjectProtocol};
+use pyo3::{Python, ObjectProtocol, PyList};
 
 use gtk::{WidgetExt, StatusbarExt, TextBufferExt};
 
@@ -99,8 +100,9 @@ fn run() -> Result<(), MpError> {
     let version: String = sys.get( "version")?.extract()?;
     
     info!("using python: {}", version);
-    
-    py.run(PRELUDEPY,None,None).unwrap(); // TODO
+
+    py.run(PRELUDEPY,None,None)?;
+    info!("Using prelude: {}", PRELUDEPY);
     
     loop {
         {
@@ -115,10 +117,14 @@ fn run() -> Result<(), MpError> {
             input_buffer.set_text(&data);
             statusbar.pop(1);
             trace!("updated");
-            py.run(&data,None,None).unwrap(); // TODO
-            let res = py.eval("footprint()", None,None).unwrap();
-            //let res:PyList = res.extract(py).unwrap();
+            py.run(&data,None,None)?;
+            let res = py.eval("flatten(footprint())", None,None)?;
             info!("res: {:?}", res);
+            let resl:&PyList = res.extract()?;
+            let rect = resl.get_item(0);
+            info!("rect: {:?}", rect);
+            let dict = rect.call_method0("to_dict")?;
+            info!("dict: {:?}", dict);
         }
     }
     Ok(())

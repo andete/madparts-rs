@@ -31,3 +31,9 @@ impl From<pyo3::PyErr> for MpError {
         MpError::Python(format!("{:?}", e))
     }
 }
+
+impl From<pyo3::PyDowncastError> for MpError {
+    fn from(e: pyo3::PyDowncastError) -> MpError {
+        MpError::Python(format!("{:?}", e))
+    }
+}
