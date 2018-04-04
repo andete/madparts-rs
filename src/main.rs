@@ -121,10 +121,12 @@ fn run() -> Result<(), MpError> {
             let res = py.eval("flatten(footprint())", None,None)?;
             info!("res: {:?}", res);
             let resl:&PyList = res.extract()?;
-            let rect = resl.get_item(0);
-            info!("rect: {:?}", rect);
-            let dict = rect.call_method0("to_dict")?;
-            info!("dict: {:?}", dict);
+            for i in 0..resl.len() {
+                let item = resl.get_item(i as isize);
+                info!("item: {:?}", item);
+                let gen = item.call_method0("generate")?;
+                info!("gen: {:?}", gen);
+            }
         }
     }
     Ok(())
