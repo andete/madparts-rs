@@ -102,7 +102,7 @@ fn run() -> Result<(), MpError> {
     info!("using python: {}", version);
 
     py.run(PRELUDEPY,None,None)?;
-    info!("Using prelude: {}", PRELUDEPY);
+    // info!("Using prelude: {}", PRELUDEPY);
     
     loop {
         {

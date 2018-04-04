@@ -10,8 +10,8 @@ class Element:
         self.t = t
         
     def generate(self):
-        return self.__dict__
-
+        return [self.__dict__]
+    
 class Rect(Element): 
     def __init__(self, dx, dy):
         Element.__init__(self, 'rect')
@@ -19,8 +19,8 @@ class Rect(Element):
         self.dy = dy
 
 class Line(Element):
-    def __init__(self, p1, p2):
+    def __init__(self, p1, p2, w=0.1):
         Element.__init__(self, 'line')
         (self.x1, self.y1) = p1
         (self.x2, self.y2) = p1
-        self.w = 0.1
+        self.w = w
