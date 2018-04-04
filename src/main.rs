@@ -25,7 +25,7 @@ use clap::{Arg, App};
 
 use inotify::{WatchMask, Inotify};
 
-use pyo3::{Python, ObjectProtocol, PyList};
+use pyo3::{Python, ObjectProtocol, PyList, PyDict};
 
 use gtk::{WidgetExt, StatusbarExt, TextBufferExt};
 
@@ -121,11 +121,19 @@ fn run() -> Result<(), MpError> {
             let res = py.eval("flatten(footprint())", None,None)?;
             info!("res: {:?}", res);
             let resl:&PyList = res.extract()?;
+            //let mut items = vec![];
             for i in 0..resl.len() {
                 let item = resl.get_item(i as isize);
-                info!("item: {:?}", item);
                 let gen = item.call_method0("generate")?;
-                info!("gen: {:?}", gen);
+                //info!("gen: {:?}", gen);
+                let genl:&PyList = gen.extract()?;
+                for j in 0..genl.len() {
+                    let item = genl.get_item(j as isize);
+                    info!("item: {:?}", item);
+                    let idict:&PyDict = item.extract()?;
+                    let t:String = idict.get_item("t").unwrap().extract()?; // TODO
+                    info!("t: '{}'", t);
+                }
             }
         }
     }
