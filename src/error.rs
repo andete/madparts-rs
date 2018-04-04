@@ -12,6 +12,7 @@ pub enum MpError {
     GuiError(String),
     IOError(String),
     Python(String),
+    Other(String),
 }
 
 impl From<glib::BoolError> for MpError {

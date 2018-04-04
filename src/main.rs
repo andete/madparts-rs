@@ -35,6 +35,21 @@ pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 const PRELUDEPY:&'static str = include_str!("prelude.py");
 
+#[derive(Debug)]
+enum Element {
+    Rect,
+    Line,
+}
+
+fn convert(dict:&PyDict) -> Result<Element, MpError> {
+    let t:String = dict.get_item("t").unwrap().extract()?; // TODO
+    match t.as_str() {
+        "rect" => Ok(Element::Rect),
+        "line" => Ok(Element::Line),
+        x => Err(MpError::Other(format!("Unknown type: {}", x))),
+    }
+}
+
 fn run() -> Result<(), MpError> {
     std::env::set_var("RUST_LOG","debug");
     env_logger::init();
@@ -131,8 +146,8 @@ fn run() -> Result<(), MpError> {
                     let item = genl.get_item(j as isize);
                     info!("item: {:?}", item);
                     let idict:&PyDict = item.extract()?;
-                    let t:String = idict.get_item("t").unwrap().extract()?; // TODO
-                    info!("t: '{}'", t);
+                    let x = convert(idict)?;
+                    info!("x: '{:?}'", x);
                 }
             }
         }
