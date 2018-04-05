@@ -24,7 +24,7 @@ class Line(Element):
     def __init__(self, p1, p2, w=0.1):
         Element.__init__(self, 'line')
         (self.x1, self.y1) = p1
-        (self.x2, self.y2) = p1
+        (self.x2, self.y2) = p2
         self.w = w
 
 # Arc

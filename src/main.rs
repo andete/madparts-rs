@@ -121,7 +121,7 @@ fn run() -> Result<(), MpError> {
             let res = py.eval("flatten(footprint())", None,None)?;
             info!("res: {:?}", res);
             let resl:&PyList = res.extract()?;
-            //let mut items = vec![];
+            let mut items = vec![];
             for i in 0..resl.len() {
                 let item = resl.get_item(i as isize);
                 let gen = item.call_method0("generate")?;
@@ -133,8 +133,11 @@ fn run() -> Result<(), MpError> {
                     let idict:&PyDict = item.extract()?;
                     let x = element::Element::try_from(idict)?;
                     info!("x: '{:?}'", x);
+                    items.push(x);
                 }
             }
+            let bound = element::bounds(&items);
+            info!("Bound: {:?}", bound);
         }
     }
     Ok(())

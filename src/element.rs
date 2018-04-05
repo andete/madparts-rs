@@ -3,6 +3,29 @@
 use error::MpError;
 use pyo3::{PyDict, ObjectProtocol};
 
+#[derive(Default)]
+struct Bound {
+    min_x: f64,
+    min_y: f64,
+    max_x: f64,
+    max_y: f64,
+}
+
+impl Bound {
+    fn combine(&self, b:&Bound) -> Bound {
+        Bound {
+            min_x:self.min_x.min(b.min_x),
+            min_y:self.min_y.min(b.min_y),
+            max_x:self.max_x.max(b.max_x),
+            max_y:self.max_y.max(b.max_y),
+        }
+    }
+}
+
+trait BoundingBox {
+    fn bounding_box(&Self) -> Bound;
+}
+
 #[derive(Debug)]
 pub enum Element {
     Rect(Rect),
@@ -63,4 +86,41 @@ impl<'a> TryFrom<&'a PyDict> for Line {
         let w:f64 = dict.get_item("w").unwrap().extract()?; // TODO
         Ok(Line { x1, y1, x2, y2, w })
     }
+}
+
+impl BoundingBox for Line {
+    fn bounding_box(line:&Line) -> Bound {
+        let min_x = line.x1.min(line.x2) - line.w/2.0;
+        let min_y = line.y1.min(line.y2) - line.w/2.0;
+        let max_x = line.x1.max(line.x2) + line.w/2.0;
+        let max_y = line.y1.max(line.y2) + line.w/2.0;
+        Bound { min_x, min_y, max_x, max_y }
+    }
+}
+
+impl BoundingBox for Rect {
+    fn bounding_box(rect:&Rect) -> Bound {
+        let min_x = rect.x - rect.dx/2.0;
+        let max_x = rect.x + rect.dx/2.0;
+        let min_y = rect.y - rect.dy/2.0;
+        let max_y = rect.y + rect.dy/2.0;
+        Bound { min_x, min_y, max_x, max_y }
+    }
+}
+
+impl BoundingBox for Element {
+    fn bounding_box(e:&Element) -> Bound {
+        match *e {
+            Element::Line(ref l) => BoundingBox::bounding_box(l),
+            Element::Rect(ref r) => BoundingBox::bounding_box(r),
+        }
+    }
+}
+
+pub fn bounds(v:&Vec<Element>) -> ((f64,f64),(f64,f64)) {
+    let mut s = Bound::default();
+    for e in v {
+        s = s.combine(&BoundingBox::bounding_box(e));
+    }
+    ((s.min_x, s.min_y), (s.max_x, s.max_y))
 }
