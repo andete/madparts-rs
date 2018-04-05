@@ -3,12 +3,12 @@
 use error::MpError;
 use pyo3::{PyDict, ObjectProtocol};
 
-#[derive(Default)]
-struct Bound {
-    min_x: f64,
-    min_y: f64,
-    max_x: f64,
-    max_y: f64,
+#[derive(Debug,Default)]
+pub struct Bound {
+    pub min_x: f64,
+    pub min_y: f64,
+    pub max_x: f64,
+    pub max_y: f64,
 }
 
 impl Bound {
@@ -117,10 +117,10 @@ impl BoundingBox for Element {
     }
 }
 
-pub fn bounds(v:&Vec<Element>) -> ((f64,f64),(f64,f64)) {
+pub fn bound(v:&Vec<Element>) -> Bound {
     let mut s = Bound::default();
     for e in v {
         s = s.combine(&BoundingBox::bounding_box(e));
     }
-    ((s.min_x, s.min_y), (s.max_x, s.max_y))
+    s
 }

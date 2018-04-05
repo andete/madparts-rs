@@ -18,7 +18,7 @@ extern crate range;
 
 
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use clap::{Arg, App};
@@ -34,6 +34,12 @@ use error::MpError;
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 const PRELUDEPY:&'static str = include_str!("prelude.py");
+
+#[derive(Debug,Default)]
+pub struct DrawState {
+    pub bound:element::Bound,
+    pub elements:Vec<element::Element>,
+}
 
 fn run() -> Result<(), MpError> {
     std::env::set_var("RUST_LOG","debug");
@@ -70,8 +76,10 @@ fn run() -> Result<(), MpError> {
 
     // close_write,moved_to,create indicate the file was possibly messed with
     let _file_watch = ino.add_watch(&filedir, WatchMask::CREATE | WatchMask::MOVED_TO | WatchMask::CLOSE_WRITE).unwrap();
+
+    let draw_state = Arc::new(Mutex::new(DrawState::default()));
     
-    let (window, statusbar, input_buffer, exit) = gui::make_gui(&filename);
+    let (window, statusbar, input_buffer, exit) = gui::make_gui(&filename, draw_state.clone());
     
     let update_input = Arc::new(AtomicBool::new(true));
     let update_input_timeout_loop = update_input.clone();
@@ -121,7 +129,8 @@ fn run() -> Result<(), MpError> {
             let res = py.eval("flatten(footprint())", None,None)?;
             info!("res: {:?}", res);
             let resl:&PyList = res.extract()?;
-            let mut items = vec![];
+            let mut draw_state = draw_state.lock().unwrap();
+            draw_state.elements.clear();
             for i in 0..resl.len() {
                 let item = resl.get_item(i as isize);
                 let gen = item.call_method0("generate")?;
@@ -133,11 +142,11 @@ fn run() -> Result<(), MpError> {
                     let idict:&PyDict = item.extract()?;
                     let x = element::Element::try_from(idict)?;
                     info!("x: '{:?}'", x);
-                    items.push(x);
+                    draw_state.elements.push(x);
                 }
             }
-            let bound = element::bounds(&items);
-            info!("Bound: {:?}", bound);
+            draw_state.bound = element::bound(&draw_state.elements);
+            info!("Bound: {:?}", draw_state.bound);
         }
     }
     Ok(())

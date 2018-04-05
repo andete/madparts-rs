@@ -9,17 +9,20 @@ use gdk_pixbuf::Pixbuf;
 use gio::MemoryInputStream;
 use glib::Bytes;
 
-use std::sync::Arc;
+use std::sync::{Arc,Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use util;
 use ::VERSION;
 
+use ::DrawState;
+
 const ICON:&'static str = include_str!("../media/icon.svg");
 
-fn draw_fn(area:&DrawingArea, cr:&cairo::Context) -> Inhibit {
+fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Context) -> Inhibit {
     let w:f64 = area.get_allocated_width().into();
     let h:f64 = area.get_allocated_height().into();
+    let draw_state = draw_state.lock().unwrap();
     // it's possible to scale cleverly before drawing ;) TODO
     // cr.scale(500f64, 500f64);
     cr.move_to(0.0,0.0);
@@ -29,7 +32,7 @@ fn draw_fn(area:&DrawingArea, cr:&cairo::Context) -> Inhibit {
     Inhibit(false)
 }
 
-pub fn make_gui(filename: &str) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>) {
+pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>) {
 
  let window = gtk::Window::new(gtk::WindowType::Toplevel);
 
@@ -113,7 +116,7 @@ pub fn make_gui(filename: &str) -> (Window, Statusbar, TextBuffer, Arc<AtomicBoo
     let view = DrawingArea::new();
     notebook.append_page(&view,Some(&Label::new(Some("view"))));
 
-    view.connect_draw(draw_fn);
+    view.connect_draw(move |a,c| draw_fn(draw_state.clone(), a, c));
     
     let statusbar = Statusbar::new();
     statusbar.push(0, "Ready.");
