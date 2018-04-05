@@ -17,18 +17,36 @@ use ::VERSION;
 
 use ::DrawState;
 
+use element::DrawElement;
+
 const ICON:&'static str = include_str!("../media/icon.svg");
 
 fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Context) -> Inhibit {
     let w:f64 = area.get_allocated_width().into();
     let h:f64 = area.get_allocated_height().into();
+    info!("w: {}, h: {}", w, h);
     let draw_state = draw_state.lock().unwrap();
-    // it's possible to scale cleverly before drawing ;) TODO
-    // cr.scale(500f64, 500f64);
+    let dw = draw_state.bound.max_x - draw_state.bound.min_x;
+    let dh = draw_state.bound.max_y - draw_state.bound.min_y;
+    info!("dw: {}, dh: {}", dw, dh);
+    let t = w/h;
+    let dt = dw/dh;
+    info!("t: {}, dt: {}", t, dt);
+    if t > dt {
+        // dh is limiting factor
+        cr.scale(w/(w*dh/h), h/dh);
+        info!("scaling to: {}, {}", w*dh/h, dh);
+    } else {
+        // dw is limiting factor
+        cr.scale(w/dw, h/(h*dw/w));
+        info!("scaling to: {}, {}", dw, h*dw/w);
+    }
+    // translate origin
+    cr.translate(-draw_state.bound.min_x, -draw_state.bound.min_y);
     cr.move_to(0.0,0.0);
-    cr.set_line_width(1.0);
-    cr.line_to(w,h);
-    cr.stroke();
+    for e in &draw_state.elements {
+        e.draw_element(cr);
+    }
     Inhibit(false)
 }
 

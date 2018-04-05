@@ -1,5 +1,7 @@
 // (c) 2018 Joost Yervante Damad <joost@damad.be>
 
+use cairo;
+
 use error::MpError;
 use pyo3::{PyDict, ObjectProtocol};
 
@@ -23,7 +25,11 @@ impl Bound {
 }
 
 trait BoundingBox {
-    fn bounding_box(&Self) -> Bound;
+    fn bounding_box(&self) -> Bound;
+}
+
+pub trait DrawElement {
+    fn draw_element(&self, &cairo::Context);
 }
 
 #[derive(Debug)]
@@ -89,30 +95,54 @@ impl<'a> TryFrom<&'a PyDict> for Line {
 }
 
 impl BoundingBox for Line {
-    fn bounding_box(line:&Line) -> Bound {
-        let min_x = line.x1.min(line.x2) - line.w/2.0;
-        let min_y = line.y1.min(line.y2) - line.w/2.0;
-        let max_x = line.x1.max(line.x2) + line.w/2.0;
-        let max_y = line.y1.max(line.y2) + line.w/2.0;
+    fn bounding_box(&self) -> Bound {
+        let min_x = self.x1.min(self.x2) - self.w/2.0;
+        let min_y = self.y1.min(self.y2) - self.w/2.0;
+        let max_x = self.x1.max(self.x2) + self.w/2.0;
+        let max_y = self.y1.max(self.y2) + self.w/2.0;
         Bound { min_x, min_y, max_x, max_y }
     }
 }
 
 impl BoundingBox for Rect {
-    fn bounding_box(rect:&Rect) -> Bound {
-        let min_x = rect.x - rect.dx/2.0;
-        let max_x = rect.x + rect.dx/2.0;
-        let min_y = rect.y - rect.dy/2.0;
-        let max_y = rect.y + rect.dy/2.0;
+    fn bounding_box(&self) -> Bound {
+        let min_x = self.x - self.dx/2.0;
+        let max_x = self.x + self.dx/2.0;
+        let min_y = self.y - self.dy/2.0;
+        let max_y = self.y + self.dy/2.0;
         Bound { min_x, min_y, max_x, max_y }
     }
 }
 
 impl BoundingBox for Element {
-    fn bounding_box(e:&Element) -> Bound {
-        match *e {
-            Element::Line(ref l) => BoundingBox::bounding_box(l),
-            Element::Rect(ref r) => BoundingBox::bounding_box(r),
+    fn bounding_box(&self) -> Bound {
+        match *self {
+            Element::Line(ref l) => l.bounding_box(),
+            Element::Rect(ref r) => r.bounding_box(),
+        }
+    }
+}
+
+impl DrawElement for Line {
+    fn draw_element(&self, cr:&cairo::Context) {
+        cr.move_to(self.x1,self.y1);
+        cr.set_line_width(self.w);
+        cr.line_to(self.x2,self.y2);
+        cr.stroke();
+    }
+}
+
+impl DrawElement for Rect {
+    fn draw_element(&self, cr:&cairo::Context) {
+        // TODO
+    }
+}
+
+impl DrawElement for Element {
+    fn draw_element(&self, cr:&cairo::Context) {
+        match *self {
+            Element::Line(ref l) => l.draw_element(cr),
+            Element::Rect(ref r) => r.draw_element(cr),
         }
     }
 }
@@ -120,7 +150,7 @@ impl BoundingBox for Element {
 pub fn bound(v:&Vec<Element>) -> Bound {
     let mut s = Bound::default();
     for e in v {
-        s = s.combine(&BoundingBox::bounding_box(e));
+        s = s.combine(&e.bounding_box());
     }
     s
 }
