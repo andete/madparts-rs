@@ -15,6 +15,8 @@ class Element:
 class Rect(Element): 
     def __init__(self, dx, dy):
         Element.__init__(self, 'rect')
+        self.x = 0.0
+        self.y = 0.0
         self.dx = dx
         self.dy = dy
 
@@ -24,3 +26,17 @@ class Line(Element):
         (self.x1, self.y1) = p1
         (self.x2, self.y2) = p1
         self.w = w
+
+# Arc
+
+# Circle
+
+# Pad
+
+# Smd
+
+# Polygon
+
+# Text
+
+# Hole ?
