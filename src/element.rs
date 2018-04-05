@@ -134,7 +134,9 @@ impl DrawElement for Line {
 
 impl DrawElement for Rect {
     fn draw_element(&self, cr:&cairo::Context) {
-        // TODO
+        cr.rectangle(self.x-self.dx/2.0, self.y-self.dx/2.0, self.dx, self.dy);
+        cr.set_source_rgba(1.0, 0.0, 0.0, 0.80);
+        cr.fill();
     }
 }
 
