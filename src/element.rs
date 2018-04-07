@@ -3,7 +3,8 @@
 use cairo;
 
 use error::MpError;
-use pyo3::{PyDict, ObjectProtocol};
+
+use serde_json;
 
 #[derive(Debug,Default)]
 pub struct Bound {
@@ -38,7 +39,7 @@ pub enum Element {
     Line(Line),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Rect {
     pub x:f64,
     pub y:f64,
@@ -46,7 +47,7 @@ pub struct Rect {
     pub dy:f64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Line {
     pub x1:f64,
     pub y1:f64,
@@ -55,42 +56,32 @@ pub struct Line {
     pub w:f64,
 }
 
-impl<'a> TryFrom<&'a PyDict> for Element {
+impl TryFrom<String> for Element {
     type Error = MpError;
     
-    fn try_from(dict: &'a PyDict) -> Result<Self, Self::Error> {
-        let t:String = dict.get_item("t").unwrap().extract()?; // TODO
-        match t.as_str() {
-            "rect" => Ok(Element::Rect(Rect::try_from(dict)?)),
-            "line" => Ok(Element::Line(Line::try_from(dict)?)),
-            x => Err(MpError::Other(format!("Unknown type: {}", x))),
+    fn try_from(json: String) -> Result<Self, Self::Error> {
+        let v: serde_json::Value = serde_json::from_str(&json)?;
+        match v["t"] {
+            serde_json::Value::Null => {
+                Err(MpError::Other(format!("missing 't' in Element {}", json)))
+            }
+            serde_json::Value::String(ref s) => {
+                match s.as_str() {
+                    "rect" => {
+                        let r:Rect = serde_json::from_str(&json)?;
+                        Ok(Element::Rect(r))
+                    },
+                    "line" => {
+                        let r:Line = serde_json::from_str(&json)?;
+                        Ok(Element::Line(r))
+                    },
+                    x => Err(MpError::Other(format!("Unknown type: {}", x))),
+                }
+            }
+            _ => {
+                Err(MpError::Other(format!("unknown 't' in Element {}", json)))
+            }
         }
-    }
-}
-
-
-impl<'a> TryFrom<&'a PyDict> for Rect {
-    type Error = MpError;
-    
-    fn try_from(dict: &'a PyDict) -> Result<Self, Self::Error> {
-        let x:f64 = dict.get_item("x").unwrap().extract()?; // TODO
-        let y:f64 = dict.get_item("y").unwrap().extract()?; // TODO
-        let dx:f64 = dict.get_item("dx").unwrap().extract()?; // TODO
-        let dy:f64 = dict.get_item("dy").unwrap().extract()?; // TODO
-        Ok(Rect { x, y, dx, dy })
-    }
-}
-
-impl<'a> TryFrom<&'a PyDict> for Line {
-    type Error = MpError;
-    
-    fn try_from(dict: &'a PyDict) -> Result<Self, Self::Error> {
-        let x1:f64 = dict.get_item("x1").unwrap().extract()?; // TODO
-        let y1:f64 = dict.get_item("y1").unwrap().extract()?; // TODO
-        let x2:f64 = dict.get_item("x2").unwrap().extract()?; // TODO
-        let y2:f64 = dict.get_item("y2").unwrap().extract()?; // TODO
-        let w:f64 = dict.get_item("w").unwrap().extract()?; // TODO
-        Ok(Line { x1, y1, x2, y2, w })
     }
 }
 

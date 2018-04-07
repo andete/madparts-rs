@@ -10,7 +10,8 @@ class Element:
         self.t = t
         
     def generate(self):
-        return [self.__dict__]
+        import json
+        return [json.dumps(self.__dict__)]
     
 class Rect(Element): 
     def __init__(self, dx, dy):

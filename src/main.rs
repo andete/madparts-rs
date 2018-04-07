@@ -1,4 +1,5 @@
 // (c) 2016-2018 Joost Yervante Damad <joost@damad.be>
+
 #![feature(proc_macro, specialization, const_fn)]
 
 extern crate cairo;
@@ -16,6 +17,11 @@ extern crate inotify;
 extern crate log;
 extern crate range;
 
+extern crate serde;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
+
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -25,7 +31,7 @@ use clap::{Arg, App};
 
 use inotify::{WatchMask, Inotify};
 
-use pyo3::{Python, ObjectProtocol, PyList, PyDict};
+use pyo3::{Python, ObjectProtocol, PyList};
 
 use gtk::{WidgetExt, StatusbarExt, TextBufferExt};
 
@@ -139,8 +145,8 @@ fn run() -> Result<(), MpError> {
                 for j in 0..genl.len() {
                     let item = genl.get_item(j as isize);
                     info!("item: {:?}", item);
-                    let idict:&PyDict = item.extract()?;
-                    let x = element::Element::try_from(idict)?;
+                    let json:String = item.extract()?;
+                    let x = element::Element::try_from(json)?;
                     info!("x: '{:?}'", x);
                     draw_state.elements.push(x);
                 }

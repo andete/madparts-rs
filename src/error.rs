@@ -4,6 +4,7 @@ use std::io;
 
 use glib;
 use pyo3;
+use serde_json;
 
 // TODO: use failure crate
 
@@ -13,6 +14,7 @@ pub enum MpError {
     IOError(String),
     Python(String),
     Other(String),
+    Json(String),
 }
 
 impl From<glib::BoolError> for MpError {
@@ -36,5 +38,11 @@ impl From<pyo3::PyErr> for MpError {
 impl From<pyo3::PyDowncastError> for MpError {
     fn from(e: pyo3::PyDowncastError) -> MpError {
         MpError::Python(format!("{:?}", e))
+    }
+}
+
+impl From<serde_json::Error> for MpError {
+    fn from(e: serde_json::Error) -> MpError {
+        MpError::Json(format!("{:?}", e))
     }
 }
