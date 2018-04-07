@@ -141,6 +141,7 @@ impl BoundingBox for Element {
 
 impl DrawElement for Line {
     fn draw_element(&self, cr:&cairo::Context) {
+        cr.set_line_cap(cairo::enums::LineCap::Round);
         cr.move_to(self.x1,self.y1);
         cr.set_line_width(self.w);
         cr.line_to(self.x2,self.y2);
