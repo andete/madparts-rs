@@ -37,6 +37,7 @@ pub trait DrawElement {
 pub enum Element {
     Rect(Rect),
     Line(Line),
+    Text(Text),
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,6 +55,14 @@ pub struct Line {
     pub x2:f64,
     pub y2:f64,
     pub w:f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Text {
+    pub x:f64,
+    pub y:f64,
+    pub w:f64,
+    pub txt:String,
 }
 
 impl TryFrom<String> for Element {
@@ -74,6 +83,10 @@ impl TryFrom<String> for Element {
                     "line" => {
                         let r:Line = serde_json::from_str(&json)?;
                         Ok(Element::Line(r))
+                    },
+                    "text" => {
+                        let t:Text = serde_json::from_str(&json)?;
+                        Ok(Element::Text(t))
                     },
                     x => Err(MpError::Other(format!("Unknown type: {}", x))),
                 }
@@ -105,11 +118,23 @@ impl BoundingBox for Rect {
     }
 }
 
+impl BoundingBox for Text {
+    fn bounding_box(&self) -> Bound {
+        // TODO!
+        let min_x = self.x;
+        let max_x = self.x;
+        let min_y = self.y;
+        let max_y = self.y;
+        Bound { min_x, min_y, max_x, max_y }
+    }
+}
+
 impl BoundingBox for Element {
     fn bounding_box(&self) -> Bound {
         match *self {
             Element::Line(ref l) => l.bounding_box(),
             Element::Rect(ref r) => r.bounding_box(),
+            Element::Text(ref t) => t.bounding_box(),
         }
     }
 }
@@ -131,11 +156,22 @@ impl DrawElement for Rect {
     }
 }
 
+impl DrawElement for Text {
+    fn draw_element(&self, cr:&cairo::Context) {
+        // TODO
+        cr.select_font_face("Sans", cairo::enums::FontSlant::Normal, cairo::enums::FontWeight::Normal);
+        cr.set_font_size(0.35);
+        cr.move_to(self.x,self.y);
+        cr.show_text(&self.txt);
+    }
+}
+
 impl DrawElement for Element {
     fn draw_element(&self, cr:&cairo::Context) {
         match *self {
             Element::Line(ref l) => l.draw_element(cr),
             Element::Rect(ref r) => r.draw_element(cr),
+            Element::Text(ref t) => t.draw_element(cr),
         }
     }
 }
