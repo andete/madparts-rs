@@ -6,8 +6,8 @@ def flatten(S):
     return S[:1] + flatten(S[1:])
 
 class Element:
-    def __init__(self, t):
-        self.t = t
+    def __init__(self):
+        self.t = self.__class__.__name__
         
     def generate(self):
         import json
@@ -15,7 +15,7 @@ class Element:
     
 class Rect(Element): 
     def __init__(self, dx, dy):
-        Element.__init__(self, 'rect')
+        Element.__init__(self)
         self.x = 0.0
         self.y = 0.0
         self.dx = dx
@@ -23,14 +23,14 @@ class Rect(Element):
 
 class Line(Element):
     def __init__(self, p1, p2, w=0.1):
-        Element.__init__(self, 'line')
+        Element.__init__(self)
         (self.x1, self.y1) = p1
         (self.x2, self.y2) = p2
         self.w = w
 
 class Text(Element):
     def __init__(self, txt, w=0.1):
-        Element.__init__(self, 'text')
+        Element.__init__(self)
         self.txt = txt
         self.w = w
         self.x = 0

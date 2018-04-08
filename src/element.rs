@@ -76,15 +76,15 @@ impl TryFrom<String> for Element {
             }
             serde_json::Value::String(ref s) => {
                 match s.as_str() {
-                    "rect" => {
+                    "Rect" => {
                         let r:Rect = serde_json::from_str(&json)?;
                         Ok(Element::Rect(r))
                     },
-                    "line" => {
+                    "Line" => {
                         let r:Line = serde_json::from_str(&json)?;
                         Ok(Element::Line(r))
                     },
-                    "text" => {
+                    "Text" => {
                         let t:Text = serde_json::from_str(&json)?;
                         Ok(Element::Text(t))
                     },
