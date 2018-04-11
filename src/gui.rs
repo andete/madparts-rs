@@ -18,6 +18,7 @@ use ::VERSION;
 use ::DrawState;
 
 use element::DrawElement;
+use settings::COLOR_SCHEME;
 
 const ICON:&'static str = include_str!("../media/icon.svg");
 
@@ -26,7 +27,7 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     let h:f64 = area.get_allocated_height().into();
     info!("w: {}, h: {}", w, h);
     cr.rectangle(0.0,0.0,w,h);
-    cr.set_source_rgb(0.0, 0.0, 0.0);
+    COLOR_SCHEME["background"].set_source(cr);
     cr.fill();
     let draw_state = draw_state.lock().unwrap();
     let dw = draw_state.bound.max_x - draw_state.bound.min_x;

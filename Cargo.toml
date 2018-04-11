@@ -16,6 +16,7 @@ gdk-pixbuf = "0.4"
 gio = "0.4"
 cairo-rs = "0.4"
 inotify = "0.5"
+lazy_static = "1.0"
 range = "0.3"
 pyo3 = "0.2"
 #pyo3 = { git = "https://github.com/PyO3/pyo3.git" }

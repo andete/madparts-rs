@@ -17,6 +17,9 @@ extern crate inotify;
 extern crate log;
 extern crate range;
 
+#[macro_use]
+extern crate lazy_static;
+
 extern crate serde;
 extern crate serde_json;
 #[macro_use]
@@ -166,3 +169,4 @@ mod error;
 mod gui;
 mod util;
 mod element;
+mod settings;
