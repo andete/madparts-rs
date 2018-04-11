@@ -29,10 +29,10 @@ class Line(Element):
         self.w = w
 
 class Text(Element):
-    def __init__(self, txt, w=0.1):
+    def __init__(self, txt, dy=1.0):
         Element.__init__(self)
         self.txt = txt
-        self.w = w
+        self.dy = dy
         self.x = 0
         self.y = 0
 

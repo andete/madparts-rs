@@ -61,7 +61,7 @@ pub struct Line {
 pub struct Text {
     pub x:f64,
     pub y:f64,
-    pub w:f64,
+    pub dy:f64,
     pub txt:String,
 }
 
@@ -120,11 +120,25 @@ impl BoundingBox for Rect {
 
 impl BoundingBox for Text {
     fn bounding_box(&self) -> Bound {
+        // TODO: create a dummy context, size doesn't matter
+        // but should be big enough to hold the text...
+        // https://www.cairographics.org/documentation/cairomm/reference/toy-text_8cc-example.html
+        // https://www.cairographics.org/tutorial/#L2textalign
+
+        let img = cairo::ImageSurface::create(cairo::enums::Format::ARgb32, 2000, 100).unwrap();
+        let cr = cairo::Context::new(&img);
+        
+        cr.select_font_face("Sans", cairo::enums::FontSlant::Normal, cairo::enums::FontWeight::Normal);
+        cr.set_font_size(self.dy);
+        let ext = cr.text_extents(&self.txt);
+        let w = ext.width;
+        let h = ext.height;
+        info!("text size: {} x {}", w, h);
         // TODO!
-        let min_x = self.x;
-        let max_x = self.x;
-        let min_y = self.y;
-        let max_y = self.y;
+        let min_x = self.x-w/2.0;
+        let max_x = self.x+w/2.0;
+        let min_y = self.y-h/2.0;
+        let max_y = self.y+h/2.0;
         Bound { min_x, min_y, max_x, max_y }
     }
 }
@@ -151,7 +165,7 @@ impl DrawElement for Line {
 
 impl DrawElement for Rect {
     fn draw_element(&self, cr:&cairo::Context) {
-        cr.rectangle(self.x-self.dx/2.0, self.y-self.dx/2.0, self.dx, self.dy);
+        cr.rectangle(self.x-self.dx/2.0, self.y-self.dy/2.0, self.dx, self.dy);
         cr.set_source_rgba(1.0, 0.0, 0.0, 0.80);
         cr.fill();
     }
@@ -161,8 +175,14 @@ impl DrawElement for Text {
     fn draw_element(&self, cr:&cairo::Context) {
         // TODO
         cr.select_font_face("Sans", cairo::enums::FontSlant::Normal, cairo::enums::FontWeight::Normal);
-        cr.set_font_size(0.35);
-        cr.move_to(self.x,self.y);
+        cr.set_font_size(self.dy);
+        let ext = cr.text_extents(&self.txt);
+        let w = ext.width;
+        let h = ext.height;
+        cr.rectangle(self.x-w/2.0, self.y-h/2.0, w, h);
+        cr.set_source_rgba(1.0, 0.0, 0.0, 0.80);
+        cr.fill();
+        cr.move_to(self.x-w/2.0-ext.x_bearing,self.y+h/2.0);
         cr.show_text(&self.txt);
     }
 }
