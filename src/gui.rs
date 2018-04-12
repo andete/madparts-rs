@@ -18,7 +18,7 @@ use ::VERSION;
 use ::DrawState;
 
 use element::DrawElement;
-use settings::COLOR_SCHEME;
+use settings::{LAYER, LAYER_Z, Layer};
 
 const ICON:&'static str = include_str!("../media/icon.svg");
 
@@ -28,8 +28,8 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     info!("w: {}, h: {}", w, h);
 
     // set background
+    LAYER[&Layer::Background].color.set_source(cr);
     cr.rectangle(0.0,0.0,w,h);
-    COLOR_SCHEME["background"].set_source(cr);
     cr.fill();
 
     // scale x and y
@@ -53,7 +53,7 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     cr.translate(-draw_state.bound.min_x, -draw_state.bound.min_y);
 
     // draw axes
-    COLOR_SCHEME["axes"].set_source(cr);
+    LAYER[&Layer::Axes].color.set_source(cr);
     cr.move_to(-dw*2.0,0.0);
     cr.set_line_width(0.01);
     cr.line_to(dw*2.0,0.0);
@@ -63,7 +63,7 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     cr.stroke();
     
     // draw unit dots
-    COLOR_SCHEME["grid"].set_source(cr);
+    LAYER[&Layer::Grid].color.set_source(cr);
     cr.set_line_cap(cairo::enums::LineCap::Round);
     cr.set_line_width(0.01);
     for ix in -((dw*2.0) as i32)..((dw*2.0) as i32) {
@@ -74,10 +74,11 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     }
     cr.stroke();
 
-    // draw elements
-    cr.move_to(0.0,0.0);
-    for e in &draw_state.elements {
-        e.draw_element(cr);
+    // draw elements, layer by layer
+    for (_z,layer) in LAYER_Z.iter() {
+        for e in &draw_state.elements {
+            e.draw_element(cr, *layer);
+        }
     }
     
     

@@ -8,6 +8,19 @@ pub struct Color {
     alpha:f64,
 }
 
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+pub enum Layer {
+    Background,
+    Grid,
+    Axes,
+    FCu,
+}
+
+pub struct LayerStat {
+    pub color:Color,
+    pub z:i64,
+}
+
 impl Color {
     pub fn set_source(&self, cr:&cairo::Context) {
         cr.set_source_rgba(self.red, self.green, self.blue, self.alpha);
@@ -15,12 +28,33 @@ impl Color {
 }
 
 lazy_static! {
-    pub static ref COLOR_SCHEME: HashMap<&'static str, Color> = {
+    pub static ref LAYER: HashMap<Layer, LayerStat> = {
         let mut m = HashMap::new();
-        m.insert("background", Color { red:0.0, green:0.0, blue:0.0, alpha:1.0 });
-        m.insert("grid", Color { red:0.5, green:0.5, blue:0.5, alpha:1.0 });
-        m.insert("axes", Color { red:1.0, green:0.0, blue:0.0, alpha:1.0 });
+        m.insert(Layer::Background, LayerStat {
+            color:Color { red:0.0, green:0.0, blue:0.0, alpha:1.0 },
+            z:-100,
+        });
+        m.insert(Layer::Grid, LayerStat {
+            color:Color { red:0.52, green:0.52, blue:0.52, alpha:1.0 },
+            z:-90,
+        });
+        m.insert(Layer::Axes, LayerStat {
+            color:Color { red:0.0, green:0.0, blue:0.52, alpha:1.0 },
+            z:-80,
+        });
+        m.insert(Layer::FCu, LayerStat {
+            color:Color { red:0.52, green:0.0, blue:0.0, alpha:1.0 },
+            z:1,
+        });
         m
+    };
+    pub static ref LAYER_Z: Vec<(i64, Layer)> = {
+        let mut v = vec![];
+        for (ref k, ref x) in LAYER.iter() {
+            v.push((x.z, **k));
+        }
+        v.sort_by(|(i,_),(j,_)| i.cmp(j));
+        v
     };
 }
 

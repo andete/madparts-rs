@@ -6,6 +6,8 @@ use error::MpError;
 
 use serde_json;
 
+use settings::Layer;
+
 #[derive(Debug,Default)]
 pub struct Bound {
     pub min_x: f64,
@@ -30,7 +32,7 @@ trait BoundingBox {
 }
 
 pub trait DrawElement {
-    fn draw_element(&self, &cairo::Context);
+    fn draw_element(&self, &cairo::Context, layer:Layer);
 }
 
 #[derive(Debug)]
@@ -154,7 +156,7 @@ impl BoundingBox for Element {
 }
 
 impl DrawElement for Line {
-    fn draw_element(&self, cr:&cairo::Context) {
+    fn draw_element(&self, cr:&cairo::Context, layer:Layer) {
         cr.set_line_cap(cairo::enums::LineCap::Round);
         cr.move_to(self.x1,self.y1);
         cr.set_line_width(self.w);
@@ -164,7 +166,7 @@ impl DrawElement for Line {
 }
 
 impl DrawElement for Rect {
-    fn draw_element(&self, cr:&cairo::Context) {
+    fn draw_element(&self, cr:&cairo::Context, layer:Layer) {
         cr.rectangle(self.x-self.dx/2.0, self.y-self.dy/2.0, self.dx, self.dy);
         cr.set_source_rgba(1.0, 0.0, 0.0, 0.80);
         cr.fill();
@@ -172,7 +174,7 @@ impl DrawElement for Rect {
 }
 
 impl DrawElement for Text {
-    fn draw_element(&self, cr:&cairo::Context) {
+    fn draw_element(&self, cr:&cairo::Context, layer:Layer) {
         // TODO
         cr.select_font_face("Sans", cairo::enums::FontSlant::Normal, cairo::enums::FontWeight::Normal);
         cr.set_font_size(self.dy);
@@ -188,11 +190,11 @@ impl DrawElement for Text {
 }
 
 impl DrawElement for Element {
-    fn draw_element(&self, cr:&cairo::Context) {
+    fn draw_element(&self, cr:&cairo::Context, layer:Layer) {
         match *self {
-            Element::Line(ref l) => l.draw_element(cr),
-            Element::Rect(ref r) => r.draw_element(cr),
-            Element::Text(ref t) => t.draw_element(cr),
+            Element::Line(ref l) => l.draw_element(cr, layer),
+            Element::Rect(ref r) => r.draw_element(cr, layer),
+            Element::Text(ref t) => t.draw_element(cr, layer),
         }
     }
 }
