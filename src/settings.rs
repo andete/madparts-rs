@@ -16,6 +16,7 @@ pub enum Layer {
     FCu,
     FSilkS,
     FFab,
+    CrtYd,
 }
 
 pub struct LayerStat {
@@ -58,6 +59,10 @@ lazy_static! {
         m.insert(Layer::FFab, LayerStat {
             color:Color { red:1.0, green:1.0, blue:0.0, alpha:0.76 },
             z:12,
+        });
+        m.insert(Layer::CrtYd, LayerStat {
+            color:Color { red:0.5, green:0.5, blue:0.5, alpha:0.76 },
+            z:13,
         });
         
         m
