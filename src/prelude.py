@@ -47,6 +47,13 @@ class Reference(Text):
 class Name(Text):
     def __init__(self, txt, dy=1.0):
         Text.__init__(self, txt, dy)
+
+class Smd(Element):
+    def __init__(self, name, p, s):
+        Element.__init__(self)
+        self.name = name
+        (self.x, self.y) = p
+        (self.dx, self.dy) = s
         
 # Arc
 

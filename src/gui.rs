@@ -49,7 +49,7 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
         cr.scale(w/dw, h/(h*dw/w));
         info!("scaling to: {}, {}", dw, h*dw/w);
     }
-    // translate origin
+    // translate origin TODO: centering!
     cr.translate(-draw_state.bound.min_x, -draw_state.bound.min_y);
 
     // draw axes

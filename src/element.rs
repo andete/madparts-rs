@@ -41,6 +41,7 @@ pub enum Element {
     Line(Line),
     Name(Name),
     Reference(Reference),
+    Smd(Smd),
 }
 
 #[derive(Debug, Deserialize)]
@@ -70,6 +71,15 @@ pub struct Text {
     pub y:f64,
     pub dy:f64,
     pub txt:String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Smd {
+    pub name:String,
+    pub x:f64,
+    pub y:f64,
+    pub dx:f64,
+    pub dy:f64,
 }
 
 #[derive(Debug)]
@@ -114,6 +124,10 @@ impl TryFrom<String> for Element {
                         let text:Text = serde_json::from_str(&json)?;
                         Ok(Element::Reference(Reference { text }))
                     },
+                    "Smd" => {
+                        let r:Smd = serde_json::from_str(&json)?;
+                        Ok(Element::Smd(r))
+                    },
                     x => Err(MpError::Other(format!("Unknown type: {}", x))),
                 }
             }
@@ -135,6 +149,16 @@ impl BoundingBox for Line {
 }
 
 impl BoundingBox for Rect {
+    fn bounding_box(&self) -> Bound {
+        let min_x = self.x - self.dx/2.0;
+        let max_x = self.x + self.dx/2.0;
+        let min_y = self.y - self.dy/2.0;
+        let max_y = self.y + self.dy/2.0;
+        Bound { min_x, min_y, max_x, max_y }
+    }
+}
+
+impl BoundingBox for Smd {
     fn bounding_box(&self) -> Bound {
         let min_x = self.x - self.dx/2.0;
         let max_x = self.x + self.dx/2.0;
@@ -176,6 +200,7 @@ impl BoundingBox for Element {
             Element::Rect(ref r) => r.bounding_box(),
             Element::Name(ref t) => t.text.bounding_box(),
             Element::Reference(ref t) => t.text.bounding_box(),
+            Element::Smd(ref r) => r.bounding_box(),
         }
     }
 }
@@ -210,6 +235,25 @@ impl DrawElement for Rect {
                 cr.close_path();
                 cr.stroke();
             }
+        }
+    }
+}
+
+impl DrawElement for Smd {
+    fn draw_element(&self, cr:&cairo::Context, layer:Layer) {
+        if layer == Layer::FCu {
+            LAYER[&layer].color.set_source(cr);
+            cr.rectangle(self.x-self.dx/2.0, self.y-self.dy/2.0, self.dx, self.dy);
+            cr.fill();
+            cr.select_font_face("Sans", cairo::enums::FontSlant::Normal, cairo::enums::FontWeight::Normal);
+            let l = self.name.len() as f64;
+            cr.set_font_size((self.dx/l).min(self.dy)*0.9);
+            cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+            let ext = cr.text_extents(&self.name);
+            let w = ext.width;
+            let h = ext.height;
+            cr.move_to(self.x-w/2.0-ext.x_bearing, self.y+h/2.0);
+            cr.show_text(&self.name);
         }
     }
 }
@@ -253,6 +297,7 @@ impl DrawElement for Element {
             Element::Rect(ref r) => r.draw_element(cr, layer),
             Element::Name(ref t) => t.draw_element(cr, layer),
             Element::Reference(ref t) => t.draw_element(cr, layer),
+            Element::Smd(ref t) => t.draw_element(cr, layer),
         }
     }
 }
