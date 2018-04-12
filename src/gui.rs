@@ -40,17 +40,21 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     let t = w/h;
     let dt = dw/dh;
     info!("t: {}, dt: {}", t, dt);
-    if t > dt {
+    let (sw, sh) = if t > dt {
         // dh is limiting factor
         cr.scale(w/(w*dh/h), h/dh);
         info!("scaling to: {}, {}", w*dh/h, dh);
+        (w*dh/h, dh)
     } else {
         // dw is limiting factor
         cr.scale(w/dw, h/(h*dw/w));
         info!("scaling to: {}, {}", dw, h*dw/w);
-    }
-    // translate origin TODO: centering!
-    cr.translate(-draw_state.bound.min_x, -draw_state.bound.min_y);
+        (dw, h*dw/w)
+    };
+    
+    // translate origin
+    cr.translate(-draw_state.bound.min_x+(sw-dw)/2.0,
+                 -draw_state.bound.min_y+(sh-dh)/2.0);
 
     // draw axes
     LAYER[&Layer::Axes].color.set_source(cr);
