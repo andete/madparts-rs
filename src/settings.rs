@@ -8,12 +8,14 @@ pub struct Color {
     alpha:f64,
 }
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Layer {
     Background,
     Grid,
     Axes,
     FCu,
+    FSilkS,
+    FFab,
 }
 
 pub struct LayerStat {
@@ -26,6 +28,9 @@ impl Color {
         cr.set_source_rgba(self.red, self.green, self.blue, self.alpha);
     }
 }
+
+// kicad: see in common/colors.cpp
+// and common/class_colors_design_settings.cpp
 
 lazy_static! {
     pub static ref LAYER: HashMap<Layer, LayerStat> = {
@@ -46,6 +51,15 @@ lazy_static! {
             color:Color { red:0.52, green:0.0, blue:0.0, alpha:1.0 },
             z:1,
         });
+        m.insert(Layer::FSilkS, LayerStat {
+            color:Color { red:0.0, green:0.52, blue:0.52, alpha:1.0 },
+            z:10,
+        });
+        m.insert(Layer::FFab, LayerStat {
+            color:Color { red:1.0, green:1.0, blue:0.0, alpha:0.76 },
+            z:12,
+        });
+        
         m
     };
     pub static ref LAYER_Z: Vec<(i64, Layer)> = {
