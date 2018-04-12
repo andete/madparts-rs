@@ -18,6 +18,8 @@ lazy_static! {
     pub static ref COLOR_SCHEME: HashMap<&'static str, Color> = {
         let mut m = HashMap::new();
         m.insert("background", Color { red:0.0, green:0.0, blue:0.0, alpha:1.0 });
+        m.insert("grid", Color { red:0.5, green:0.5, blue:0.5, alpha:1.0 });
+        m.insert("axes", Color { red:1.0, green:0.0, blue:0.0, alpha:1.0 });
         m
     };
 }

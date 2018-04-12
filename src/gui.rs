@@ -26,9 +26,13 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     let w:f64 = area.get_allocated_width().into();
     let h:f64 = area.get_allocated_height().into();
     info!("w: {}, h: {}", w, h);
+
+    // set background
     cr.rectangle(0.0,0.0,w,h);
     COLOR_SCHEME["background"].set_source(cr);
     cr.fill();
+
+    // scale x and y
     let draw_state = draw_state.lock().unwrap();
     let dw = draw_state.bound.max_x - draw_state.bound.min_x;
     let dh = draw_state.bound.max_y - draw_state.bound.min_y;
@@ -47,10 +51,36 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     }
     // translate origin
     cr.translate(-draw_state.bound.min_x, -draw_state.bound.min_y);
+
+    // draw axes
+    COLOR_SCHEME["axes"].set_source(cr);
+    cr.move_to(-dw*2.0,0.0);
+    cr.set_line_width(0.01);
+    cr.line_to(dw*2.0,0.0);
+    cr.stroke();
+    cr.move_to(0.0,-dh*2.0);
+    cr.line_to(0.0,dh*2.0);
+    cr.stroke();
+    
+    // draw unit dots
+    COLOR_SCHEME["grid"].set_source(cr);
+    cr.set_line_cap(cairo::enums::LineCap::Round);
+    cr.set_line_width(0.01);
+    for ix in -((dw*2.0) as i32)..((dw*2.0) as i32) {
+        for iy in -((dh*2.0) as i32)..((dh*2.0) as i32) {
+            cr.move_to(ix as f64, iy as f64);
+            cr.close_path();
+        }
+    }
+    cr.stroke();
+
+    // draw elements
     cr.move_to(0.0,0.0);
     for e in &draw_state.elements {
         e.draw_element(cr);
     }
+    
+    
     Inhibit(false)
 }
 
