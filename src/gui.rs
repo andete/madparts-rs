@@ -34,6 +34,9 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
 
     // scale x and y
     let draw_state = draw_state.lock().unwrap();
+    if draw_state.elements.is_empty() {
+        return Inhibit(false)
+    }
     let dw = draw_state.bound.max_x - draw_state.bound.min_x;
     let dh = draw_state.bound.max_y - draw_state.bound.min_y;
     info!("dw: {}, dh: {}", dw, dh);

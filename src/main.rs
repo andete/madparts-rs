@@ -150,13 +150,21 @@ fn run() -> Result<(), MpError> {
             input_buffer.set_text(&data);
             statusbar.pop(1);
             debug!("updated");
-            py.run(&data,None,None)?;
+            match py.run(&data,None,None) {
+                Ok(_) => (),
+                Err(e) => {
+                    e.print(py); // TODO: find a way to capture this output
+                    continue;
+                }
+            }
             debug!("loaded");
-            let res = py.eval("flatten(footprint())", None,None).or_else(|e| {
-                let e2 = MpError::Python(format!("{:?}", e));
-                e.print(py); // TODO: find a way to capture this output
-                Err(e2)
-            })?;
+            let res = match py.eval("flatten(footprint())", None,None) {
+                Ok(res) => res,
+                Err(e) => {
+                    e.print(py); // TODO: find a way to capture this output
+                    continue;
+                }
+            };
             info!("res: {:?}", res);
             let resl:&PyList = res.extract()?;
             let mut draw_state = draw_state.lock().unwrap();
