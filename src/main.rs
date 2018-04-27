@@ -1,6 +1,6 @@
 // (c) 2016-2018 Joost Yervante Damad <joost@damad.be>
 
-#![feature(proc_macro, specialization, const_fn)]
+#![feature(proc_macro, specialization, const_fn, try_from)]
 
 extern crate cairo;
 extern crate clap;
@@ -29,6 +29,7 @@ extern crate serde_derive;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::convert::TryFrom;
 
 use clap::{Arg, App};
 
@@ -156,6 +157,7 @@ fn run() -> Result<(), MpError> {
             }
             draw_state.bound = element::bound(&draw_state.elements);
             info!("Bound: {:?}", draw_state.bound);
+            window.queue_draw();
         }
     }
     Ok(())

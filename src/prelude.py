@@ -24,6 +24,16 @@ class Rect(Element):
         self.filled = False
         self.layer = "FSilkS"
 
+class CrtYd(Rect):
+    def __init__(self, dx, dy, w=0.05):
+        Rect.__init__(self, dx, dy, w)
+        self.layer = "CrtYd"
+
+class FFab(Rect):
+    def __init__(self, dx, dy, w=0.1):
+        Rect.__init__(self, dx, dy, w)
+        self.layer = "FFab"
+        
 class Line(Element):
     def __init__(self, p1, p2, w=0.1):
         Element.__init__(self)

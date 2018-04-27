@@ -8,6 +8,8 @@ use serde_json;
 
 use settings::{Layer, LAYER};
 
+use std::convert::TryFrom;
+
 #[derive(Debug,Default)]
 pub struct Bound {
     pub min_x: f64,
@@ -103,7 +105,7 @@ impl TryFrom<String> for Element {
             }
             serde_json::Value::String(ref s) => {
                 match s.as_str() {
-                    "Rect" => {
+                    "Rect" | "FFab" | "CrtYd" => {
                         let r:Rect = serde_json::from_str(&json)?;
                         Ok(Element::Rect(r))
                     },
@@ -111,11 +113,6 @@ impl TryFrom<String> for Element {
                         let r:Line = serde_json::from_str(&json)?;
                         Ok(Element::Line(r))
                     },
-                    /*
-                    "Text" => {
-                        let t:Text = serde_json::from_str(&json)?;
-                        Ok(Element::Text(t))
-                    },*/
                     "Name" => {
                         let text:Text = serde_json::from_str(&json)?;
                         Ok(Element::Name(Name { text }))
@@ -170,11 +167,8 @@ impl BoundingBox for Smd {
 
 impl BoundingBox for Text {
     fn bounding_box(&self) -> Bound {
-        // TODO: create a dummy context, size doesn't matter
-        // but should be big enough to hold the text...
-        // https://www.cairographics.org/documentation/cairomm/reference/toy-text_8cc-example.html
-        // https://www.cairographics.org/tutorial/#L2textalign
-
+        // create a dummy cairo Context to be able to calculate the
+        // text size
         let img = cairo::ImageSurface::create(cairo::enums::Format::ARgb32, 2000, 100).unwrap();
         let cr = cairo::Context::new(&img);
         

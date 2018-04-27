@@ -91,7 +91,7 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
 
 pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>) {
 
- let window = gtk::Window::new(gtk::WindowType::Toplevel);
+    let window = gtk::Window::new(gtk::WindowType::Toplevel);
 
     window.set_title(&format!("madparts (rustic edition) {}", VERSION));
     window.set_border_width(10);
