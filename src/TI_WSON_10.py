@@ -11,6 +11,7 @@ def footprint():
 
     pad = Smd(1, (0.5, 0.25))
     pads = dual(pad, 1.9, 0.5, 10)
+    #q = 5/0
     
     ep = Smd(11, (0.84, 2.4))
     

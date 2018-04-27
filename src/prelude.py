@@ -1,11 +1,19 @@
-import copy
+import copy, sys, traceback
 
-def flatten(S):
-    if S == []:
-        return S
-    if isinstance(S[0], list):
-        return flatten(S[0]) + flatten(S[1:])
-    return S[:1] + flatten(S[1:])
+def flatten(l):
+    if l == []:
+        return l
+    if isinstance(l[0], list):
+        return flatten(l[0]) + flatten(l[1:])
+    return l[:1] + flatten(l[1:])
+
+def handle(footprint_fun):
+    try:
+        l = footprint_fun()
+        return flatten(l)
+    except:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 class Element:
     def __init__(self):

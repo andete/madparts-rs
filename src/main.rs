@@ -158,7 +158,7 @@ fn run() -> Result<(), MpError> {
                 }
             }
             debug!("loaded");
-            let res = match py.eval("flatten(footprint())", None,None) {
+            let res = match py.eval("handle(footprint)", None,None) {
                 Ok(res) => res,
                 Err(e) => {
                     e.print(py); // TODO: find a way to capture this output
