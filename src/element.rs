@@ -73,6 +73,21 @@ pub struct Text {
     pub y:f64,
     pub dy:f64,
     pub txt:String,
+    pub shorten:Option<bool>,
+}
+
+impl Text{
+    pub fn shortened_text(&self) -> String {
+        let text = if self.shorten.is_some() {
+            let mut text = self.txt.clone();
+            text.truncate(4);
+            text.push_str("...");
+            text
+        } else {
+            self.txt.clone()
+        };
+        text
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -114,7 +129,8 @@ impl TryFrom<String> for Element {
                         Ok(Element::Line(r))
                     },
                     "Name" => {
-                        let text:Text = serde_json::from_str(&json)?;
+                        let mut text:Text = serde_json::from_str(&json)?;
+                        text.shorten = Some(true);
                         Ok(Element::Name(Name { text }))
                     },
                     "Reference" => {
@@ -171,10 +187,12 @@ impl BoundingBox for Text {
         // text size
         let img = cairo::ImageSurface::create(cairo::enums::Format::ARgb32, 2000, 100).unwrap();
         let cr = cairo::Context::new(&img);
+
+        let text = self.shortened_text();
         
         cr.select_font_face("Sans", cairo::enums::FontSlant::Normal, cairo::enums::FontWeight::Normal);
         cr.set_font_size(self.dy);
-        let ext = cr.text_extents(&self.txt);
+        let ext = cr.text_extents(&text);
         let w = ext.width;
         let h = ext.height;
         info!("text size: {} x {}", w, h);
@@ -257,14 +275,15 @@ impl DrawElement for Text {
         // TODO
         cr.select_font_face("Sans", cairo::enums::FontSlant::Normal, cairo::enums::FontWeight::Normal);
         cr.set_font_size(self.dy);
-        let ext = cr.text_extents(&self.txt);
+        let text = self.shortened_text();
+        let ext = cr.text_extents(&text);
         let w = ext.width;
         let h = ext.height;
         //cr.rectangle(self.x-w/2.0, self.y-h/2.0, w, h);
         //cr.fill();
         LAYER[&layer].color.set_source(cr);
         cr.move_to(self.x-w/2.0-ext.x_bearing,self.y+h/2.0);
-        cr.show_text(&self.txt);
+        cr.show_text(&text);
     }
 }
 

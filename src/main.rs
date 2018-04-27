@@ -37,7 +37,7 @@ use inotify::{WatchMask, Inotify};
 
 use pyo3::{Python, ObjectProtocol, PyList};
 
-use gtk::{WidgetExt, StatusbarExt, TextBufferExt};
+use gtk::{WidgetExt, StatusbarExt, TextBufferExt, GtkWindowExt};
 
 use error::MpError;
 
@@ -49,6 +49,20 @@ const PRELUDEPY:&'static str = include_str!("prelude.py");
 pub struct DrawState {
     pub bound:element::Bound,
     pub elements:Vec<element::Element>,
+}
+
+impl DrawState {
+    fn name(&self) -> String {
+        for e in &self.elements {
+            match e {
+                element::Element::Name(x) => {
+                    return x.text.txt.clone()
+                },
+                _ => (),
+            }
+        }
+        "NAME".into()
+    }
 }
 
 fn run() -> Result<(), MpError> {
@@ -121,6 +135,7 @@ fn run() -> Result<(), MpError> {
 
     py.run(PRELUDEPY,None,None)?;
     // info!("Using prelude: {}", PRELUDEPY);
+    info!("prelude loaded.");
     
     loop {
         {
@@ -134,9 +149,14 @@ fn run() -> Result<(), MpError> {
             let data = util::read_file(&filename).unwrap();
             input_buffer.set_text(&data);
             statusbar.pop(1);
-            trace!("updated");
+            debug!("updated");
             py.run(&data,None,None)?;
-            let res = py.eval("flatten(footprint())", None,None)?;
+            debug!("loaded");
+            let res = py.eval("flatten(footprint())", None,None).or_else(|e| {
+                let e2 = MpError::Python(format!("{:?}", e));
+                e.print(py); // TODO: find a way to capture this output
+                Err(e2)
+            })?;
             info!("res: {:?}", res);
             let resl:&PyList = res.extract()?;
             let mut draw_state = draw_state.lock().unwrap();
@@ -157,6 +177,11 @@ fn run() -> Result<(), MpError> {
             }
             draw_state.bound = element::bound(&draw_state.elements);
             info!("Bound: {:?}", draw_state.bound);
+            let mut title = format!("madparts (rustic edition) {} : ", VERSION);
+            title.push_str(&draw_state.name());
+            window.set_title(&title);
+            statusbar.pop(0);
+            statusbar.push(0, &format!("{} ready.", draw_state.name()));
             window.queue_draw();
         }
     }

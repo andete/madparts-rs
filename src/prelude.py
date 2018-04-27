@@ -1,3 +1,5 @@
+import copy
+
 def flatten(S):
     if S == []:
         return S
@@ -59,11 +61,19 @@ class Name(Text):
         Text.__init__(self, txt, dy)
 
 class Smd(Element):
-    def __init__(self, name, p, s):
+    def __init__(self, name, s, p=(0,0)):
         Element.__init__(self)
-        self.name = name
-        (self.x, self.y) = p
+        self.name = str(name)
         (self.dx, self.dy) = s
+        (self.x, self.y) = p
+
+    def at(self, name, x, y):
+        n = copy.copy(self)
+        n.name = str(name)
+        n.x = x
+        n.y = y
+        return n
+        
         
 # Arc
 
@@ -71,10 +81,18 @@ class Smd(Element):
 
 # Pad
 
-# Smd
-
 # Polygon
 
 # Text
 
 # Hole ?
+
+def dual(pad, dx, dy, n):
+    l = []
+    n2 = int(n/2)
+    dyn = float(dy)*n/2
+    for i in range(0, n2):
+        l.append(pad.at(i+1, -dx/2, -dyn/2 + dy/2 + dy*i))
+    for i in range(0, n2):
+        l.append(pad.at(i+1+n2, dx/2, dyn/2 - dy/2 - dy*i))
+    return l
