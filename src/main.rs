@@ -38,6 +38,7 @@ use inotify::{WatchMask, Inotify};
 use pyo3::{Python, ObjectProtocol, PyList};
 
 use gtk::{WidgetExt, StatusbarExt, TextBufferExt, GtkWindowExt};
+use gtk::{NotebookExtManual};
 
 use error::MpError;
 
@@ -103,7 +104,7 @@ fn run() -> Result<(), MpError> {
 
     let draw_state = Arc::new(Mutex::new(DrawState::default()));
     
-    let (window, statusbar, input_buffer, exit) = gui::make_gui(&filename, draw_state.clone());
+    let (window, statusbar, input_buffer, exit, notebook) = gui::make_gui(&filename, draw_state.clone());
     
     let update_input = Arc::new(AtomicBool::new(true));
     let update_input_timeout_loop = update_input.clone();
@@ -161,6 +162,7 @@ fn run() -> Result<(), MpError> {
             let resl:&PyList = res.extract()?;
             let mut draw_state = draw_state.lock().unwrap();
             draw_state.elements.clear();
+            let mut failed = false;
             for i in 0..resl.len() {
                 let item = resl.get_item(i as isize);
                 let gen = item.call_method0("generate")?;
@@ -173,10 +175,18 @@ fn run() -> Result<(), MpError> {
                     let x = element::Element::try_from(json)?;
                     info!("x: '{:?}'", x);
                     if let element::Element::PythonError(element::PythonError { message }) = x {
-                        continue;
+                        let message = message.replace("<string>", &filename);
+                        input_buffer.set_text(&message);
+                        info!("SET TO ZERO?!");
+                        notebook.set_current_page(Some(0));
+                        failed = true;
+                        break;
                     }
                     draw_state.elements.push(x);
                 }
+            }
+            if failed {
+                continue;
             }
             draw_state.bound = element::bound(&draw_state.elements);
             info!("Bound: {:?}", draw_state.bound);
@@ -185,6 +195,7 @@ fn run() -> Result<(), MpError> {
             window.set_title(&title);
             statusbar.pop(0);
             statusbar.push(0, &format!("{} ready.", draw_state.name()));
+            notebook.set_current_page(Some(1));
             window.queue_draw();
         }
     }

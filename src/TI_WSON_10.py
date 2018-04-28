@@ -5,7 +5,7 @@ def footprint():
     reference = Reference()
     reference.y = -2.54
     
-    fab = FFab(2, 3))
+    fab = FFab(2, 3)
     
     crtyd = CrtYd(1.9+0.5+0.5, 3.5)
 

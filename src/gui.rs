@@ -92,7 +92,7 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     Inhibit(false)
 }
 
-pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>) {
+pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>, Notebook) {
 
     let window = gtk::Window::new(gtk::WindowType::Toplevel);
 
@@ -183,5 +183,5 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, St
     v_box.pack_start(&statusbar, false, false, 0);
 
     window.add(&v_box);
-    (window, statusbar, input_buffer, exit)
+    (window, statusbar, input_buffer, exit, notebook)
 }
