@@ -7,14 +7,16 @@ def flatten(l):
         return flatten(l[0]) + flatten(l[1:])
     return l[:1] + flatten(l[1:])
 
-def handle(footprint_fun):
+def handle_load_python(filename):
     try:
-        l = footprint_fun()
-        return flatten(l)
+        exec(open(filename).read(), globals(), globals())
+        return flatten(footprint())
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-
+        message = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        e = PythonError(message)
+        return [e]
+        
 class Element:
     def __init__(self):
         self.t = self.__class__.__name__
@@ -82,6 +84,10 @@ class Smd(Element):
         n.y = y
         return n
         
+class PythonError(Element):
+    def __init__(self, message):
+        Element.__init__(self)
+        self.message = message
         
 # Arc
 

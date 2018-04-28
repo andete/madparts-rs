@@ -44,6 +44,7 @@ pub enum Element {
     Name(Name),
     Reference(Reference),
     Smd(Smd),
+    PythonError(PythonError),
 }
 
 #[derive(Debug, Deserialize)]
@@ -75,6 +76,7 @@ pub struct Text {
     pub txt:String,
     pub shorten:Option<bool>,
 }
+
 
 impl Text{
     pub fn shortened_text(&self) -> String {
@@ -140,6 +142,10 @@ impl TryFrom<String> for Element {
                     "Smd" => {
                         let r:Smd = serde_json::from_str(&json)?;
                         Ok(Element::Smd(r))
+                    },
+                    "PythonError" => {
+                        let r:PythonError = serde_json::from_str(&json)?;
+                        Ok(Element::PythonError(r))
                     },
                     x => Err(MpError::Other(format!("Unknown type: {}", x))),
                 }
@@ -213,6 +219,7 @@ impl BoundingBox for Element {
             Element::Name(ref t) => t.text.bounding_box(),
             Element::Reference(ref t) => t.text.bounding_box(),
             Element::Smd(ref r) => r.bounding_box(),
+            Element::PythonError(_) => unreachable!(),
         }
     }
 }
@@ -311,9 +318,16 @@ impl DrawElement for Element {
             Element::Name(ref t) => t.draw_element(cr, layer),
             Element::Reference(ref t) => t.draw_element(cr, layer),
             Element::Smd(ref t) => t.draw_element(cr, layer),
+            Element::PythonError(_) => unreachable!(),
         }
     }
 }
+
+#[derive(Debug, Deserialize)]
+pub struct PythonError {
+    pub message:String
+}
+
 
 pub fn bound(v:&Vec<Element>) -> Bound {
     let mut s = Bound::default();

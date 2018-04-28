@@ -150,18 +150,10 @@ fn run() -> Result<(), MpError> {
             input_buffer.set_text(&data);
             statusbar.pop(1);
             debug!("updated");
-            match py.run(&data,None,None) {
-                Ok(_) => (),
-                Err(e) => {
-                    e.print(py); // TODO: find a way to capture this output
-                    continue;
-                }
-            }
-            debug!("loaded");
-            let res = match py.eval("handle(footprint)", None,None) {
+            let res = match py.eval(&format!("handle_load_python(\"{}\")", filename), None, None) {
                 Ok(res) => res,
                 Err(e) => {
-                    e.print(py); // TODO: find a way to capture this output
+                    e.print(py);
                     continue;
                 }
             };
@@ -180,6 +172,9 @@ fn run() -> Result<(), MpError> {
                     let json:String = item.extract()?;
                     let x = element::Element::try_from(json)?;
                     info!("x: '{:?}'", x);
+                    if let element::Element::PythonError(element::PythonError { message }) = x {
+                        continue;
+                    }
                     draw_state.elements.push(x);
                 }
             }
