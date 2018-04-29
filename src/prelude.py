@@ -83,7 +83,28 @@ class Smd(Element):
         n.x = x
         n.y = y
         return n
-        
+
+class Pad(Element):
+    def __init__(self, name, s, d, p=(0,0)):
+        Element.__init__(self)
+        self.name = str(name)
+        self.dx = s
+        self.dy = s
+        (self.x, self.y) = p
+        self.drill = d
+
+    def at(self, name, x, y):
+        n = copy.copy(self)
+        n.name = str(name)
+        n.x = x
+        n.y = y
+        return n
+
+class Model(Element):
+    def __init__(self, filename):
+        Element.__init__(self)
+        self.filename = filename
+
 class PythonError(Element):
     def __init__(self, message):
         Element.__init__(self)

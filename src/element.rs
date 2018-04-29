@@ -50,6 +50,7 @@ pub enum Element {
     Name(Name),
     Reference(Reference),
     Smd(Smd),
+    Pad(Pad),
     PythonError(PythonError),
 }
 
@@ -107,6 +108,16 @@ pub struct Smd {
     pub dy:f64,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct Pad {
+    pub name:String,
+    pub x:f64,
+    pub y:f64,
+    pub dx:f64,
+    pub dy:f64,
+    pub drill: f64,
+}
+
 #[derive(Debug)]
 pub struct Name {
     pub text:Text,
@@ -144,6 +155,10 @@ impl TryFrom<String> for Element {
                     "Reference" => {
                         let text:Text = serde_json::from_str(&json)?;
                         Ok(Element::Reference(Reference { text }))
+                    },
+                    "Pad" => {
+                        let r:Pad = serde_json::from_str(&json)?;
+                        Ok(Element::Pad(r))
                     },
                     "Smd" => {
                         let r:Smd = serde_json::from_str(&json)?;
@@ -193,6 +208,16 @@ impl BoundingBox for Smd {
     }
 }
 
+impl BoundingBox for Pad {
+    fn bounding_box(&self) -> Bound {
+        let min_x = self.x - self.dx/2.0;
+        let max_x = self.x + self.dx/2.0;
+        let min_y = self.y - self.dy/2.0;
+        let max_y = self.y + self.dy/2.0;
+        Bound { min_x, min_y, max_x, max_y }
+    }
+}
+
 impl BoundingBox for Text {
     fn bounding_box(&self) -> Bound {
         // create a dummy cairo Context to be able to calculate the
@@ -225,6 +250,7 @@ impl BoundingBox for Element {
             Element::Name(ref t) => t.text.bounding_box(),
             Element::Reference(ref t) => t.text.bounding_box(),
             Element::Smd(ref r) => r.bounding_box(),
+            Element::Pad(ref r) => r.bounding_box(),
             Element::PythonError(_) => unreachable!(),
         }
     }
@@ -283,6 +309,33 @@ impl DrawElement for Smd {
     }
 }
 
+impl DrawElement for Pad {
+    fn draw_element(&self, cr:&cairo::Context, layer:Layer) {
+        if layer == Layer::FCu {
+            LAYER[&layer].color.set_source(cr);
+            // TODO: other types then circle
+            cr.stroke();
+            cr.set_line_width(0.0);
+            cr.arc(self.x, self.y, self.dx/2.0, 0.0, 360.0);
+            cr.fill();
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+            cr.arc(self.x, self.y, self.drill/2.0, 0.0, 360.0);
+            cr.fill();
+            cr.select_font_face("Sans", cairo::enums::FontSlant::Normal, cairo::enums::FontWeight::Normal);
+            let l = self.name.len() as f64;
+            cr.set_font_size((self.dx/l).min(self.dy)*0.9);
+            cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+            let ext = cr.text_extents(&self.name);
+            let w = ext.width;
+            let h = ext.height;
+            cr.move_to(self.x-w/2.0-ext.x_bearing, self.y+h/2.0);
+            cr.show_text(&self.name);
+        }
+    }
+}
+
+
+
 impl DrawElement for Text {
     fn draw_element(&self, cr:&cairo::Context, layer:Layer) {
         // TODO
@@ -324,6 +377,7 @@ impl DrawElement for Element {
             Element::Name(ref t) => t.draw_element(cr, layer),
             Element::Reference(ref t) => t.draw_element(cr, layer),
             Element::Smd(ref t) => t.draw_element(cr, layer),
+            Element::Pad(ref t) => t.draw_element(cr, layer),
             Element::PythonError(_) => unreachable!(),
         }
     }
@@ -351,6 +405,7 @@ impl ApplyFootprint for Element {
             Element::Name(ref e) => e.apply_footprint(f),
             Element::Reference(ref e) => e.apply_footprint(f),
             Element::Smd(ref e) => e.apply_footprint(f),
+            Element::Pad(ref e) => e.apply_footprint(f),
             Element::PythonError(_) => unreachable!(),
         }
     }
@@ -406,5 +461,11 @@ impl ApplyFootprint for Reference {
 impl ApplyFootprint for Smd {
     fn apply_footprint(&self, f:&mut kicad::Footprint) {
         f.smd.push(self.clone())
+    }
+}
+
+impl ApplyFootprint for Pad {
+    fn apply_footprint(&self, f:&mut kicad::Footprint) {
+        f.pad.push(self.clone())
     }
 }

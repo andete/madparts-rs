@@ -8,6 +8,7 @@ pub struct Footprint {
     pub reference:Option<Text>,
     pub desc:String,
     pub tags:String,
+    pub pad:Vec<Pad>,
     pub smd:Vec<Smd>,
     pub lines:Vec<Line>,
     

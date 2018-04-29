@@ -49,7 +49,7 @@ lazy_static! {
             z:-80,
         });
         m.insert(Layer::FCu, LayerStat {
-            color:Color { red:0.52, green:0.0, blue:0.0, alpha:1.0 },
+            color:Color { red:1.0, green:0.0, blue:0.0, alpha:0.52 },
             z:1,
         });
         m.insert(Layer::FSilkS, LayerStat {
