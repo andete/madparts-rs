@@ -10,6 +10,8 @@ use settings::{Layer, LAYER};
 
 use std::convert::TryFrom;
 
+use kicad;
+
 #[derive(Debug,Default)]
 pub struct Bound {
     pub min_x: f64,
@@ -37,6 +39,10 @@ pub trait DrawElement {
     fn draw_element(&self, &cairo::Context, layer:Layer);
 }
 
+pub trait ApplyFootprint {
+    fn apply_footprint(&self, &mut kicad::Footprint);
+}
+
 #[derive(Debug)]
 pub enum Element {
     Rect(Rect),
@@ -58,7 +64,7 @@ pub struct Rect {
     pub layer:Layer,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Line {
     pub x1:f64,
     pub y1:f64,
@@ -68,7 +74,7 @@ pub struct Line {
     pub layer:Layer,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Text {
     pub x:f64,
     pub y:f64,
@@ -92,7 +98,7 @@ impl Text{
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Smd {
     pub name:String,
     pub x:f64,
@@ -304,7 +310,7 @@ impl DrawElement for Name {
 
 impl DrawElement for Reference {
     fn draw_element(&self, cr:&cairo::Context, layer:Layer) {
-        if layer == Layer::FFab || layer == Layer::FSilkS {
+        if layer == Layer::FSilkS {
             self.text.draw_element(cr, layer);
         }
     }
@@ -335,4 +341,70 @@ pub fn bound(v:&Vec<Element>) -> Bound {
         s = s.combine(&e.bounding_box());
     }
     s
+}
+
+impl ApplyFootprint for Element {
+    fn apply_footprint(&self, f:&mut kicad::Footprint) {
+        match *self {
+            Element::Rect(ref e) => e.apply_footprint(f),
+            Element::Line(ref e) => e.apply_footprint(f),
+            Element::Name(ref e) => e.apply_footprint(f),
+            Element::Reference(ref e) => e.apply_footprint(f),
+            Element::Smd(ref e) => e.apply_footprint(f),
+            Element::PythonError(_) => unreachable!(),
+        }
+    }
+}
+
+impl ApplyFootprint for Rect {
+    fn apply_footprint(&self, f:&mut kicad::Footprint) {
+        if self.filled {
+            unimplemented!();
+        } else {
+            f.lines.push(Line {
+                x1:self.x-self.dx/2.0, y1:self.y-self.dy/2.0,
+                x2:self.x+self.dx/2.0, y2:self.y-self.dy/2.0,
+                w:self.w, layer:self.layer,
+            });
+            f.lines.push(Line {
+                x1:self.x+self.dx/2.0, y1:self.y-self.dy/2.0,
+                x2:self.x+self.dx/2.0, y2:self.y+self.dy/2.0,
+                w:self.w, layer:self.layer,
+            });
+            f.lines.push(Line {
+                x1:self.x+self.dx/2.0, y1:self.y+self.dy/2.0,
+                x2:self.x-self.dx/2.0, y2:self.y+self.dy/2.0,
+                w:self.w, layer:self.layer,
+            });
+            f.lines.push(Line {
+                x1:self.x-self.dx/2.0, y1:self.y+self.dy/2.0,
+                x2:self.x-self.dx/2.0, y2:self.y-self.dy/2.0,
+                w:self.w, layer:self.layer,
+            });
+        }
+    }
+}
+
+impl ApplyFootprint for Line {
+    fn apply_footprint(&self, f:&mut kicad::Footprint) {
+        f.lines.push(self.clone());
+    }
+}
+
+impl ApplyFootprint for Name {
+    fn apply_footprint(&self, f:&mut kicad::Footprint) {
+        f.name = Some(self.text.clone());
+    }
+}
+
+impl ApplyFootprint for Reference {
+    fn apply_footprint(&self, f:&mut kicad::Footprint) {
+        f.reference = Some(self.text.clone());
+    }
+}
+
+impl ApplyFootprint for Smd {
+    fn apply_footprint(&self, f:&mut kicad::Footprint) {
+        f.smd.push(self.clone())
+    }
 }

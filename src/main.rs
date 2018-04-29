@@ -206,8 +206,9 @@ fn main() {
     util::main_run(run);
 }
 
+mod element;
 mod error;
 mod gui;
-mod util;
-mod element;
+mod kicad;
 mod settings;
+mod util;
