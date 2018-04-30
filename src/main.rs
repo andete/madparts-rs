@@ -4,6 +4,7 @@
 
 extern crate cairo;
 extern crate clap;
+extern crate chrono;
 extern crate env_logger;
 extern crate pyo3;
 
@@ -37,8 +38,9 @@ use inotify::{WatchMask, Inotify};
 
 use pyo3::{Python, ObjectProtocol, PyList};
 
-use gtk::{WidgetExt, StatusbarExt, TextBufferExt, GtkWindowExt};
+use gtk::{WidgetExt, StatusbarExt, TextBufferExt, GtkWindowExt, DialogExt};
 use gtk::{NotebookExtManual};
+use gtk::{FileChooserDialog, FileChooserAction, FileChooserExt, ResponseType};
 
 use error::MpError;
 
@@ -104,7 +106,7 @@ fn run() -> Result<(), MpError> {
 
     let draw_state = Arc::new(Mutex::new(DrawState::default()));
     
-    let (window, statusbar, input_buffer, exit, notebook) = gui::make_gui(&filename, draw_state.clone());
+    let (window, statusbar, input_buffer, exit, notebook, save) = gui::make_gui(&filename, draw_state.clone());
     
     let update_input = Arc::new(AtomicBool::new(true));
     let update_input_timeout_loop = update_input.clone();
@@ -139,10 +141,29 @@ fn run() -> Result<(), MpError> {
     info!("prelude loaded.");
     
     loop {
-        {
-            if exit.load(Ordering::SeqCst) {
-                break;
+        if exit.load(Ordering::SeqCst) {
+            break;
+        }
+        if save.compare_and_swap(true, false, Ordering::SeqCst) {
+            let d = FileChooserDialog::with_buttons(
+                Some("Export kicad file"),
+                Some(&window),
+                FileChooserAction::Save,
+                 &[("_Cancel", ResponseType::Cancel), ("_Export", ResponseType::Accept)]
+            );
+            let filename = {
+                let draw_state = draw_state.lock().unwrap();
+                format!("{}.kicad_mod", draw_state.name())
+            };
+            d.set_current_name(filename);
+            let res:ResponseType = d.run().into();
+            if res == ResponseType::Accept {
+                let draw_state = draw_state.lock().unwrap();
+                let filename = d.get_filename().unwrap();
+                kicad::save(&draw_state.elements, filename)?;
+                // TODO: handle failure to save: show error message to user
             }
+            d.destroy();
         }
         gtk::main_iteration();
         if update_input.compare_and_swap(true, false, Ordering::SeqCst) {

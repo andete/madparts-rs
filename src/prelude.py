@@ -55,20 +55,23 @@ class Line(Element):
         self.layer = "FSilkS"
 
 class Text(Element):
-    def __init__(self, txt, dy=1.0):
+    def __init__(self, txt, dy=1.0, th=0.1):
         Element.__init__(self)
         self.txt = txt
         self.dy = dy
         self.x = 0
         self.y = 0
+        self.thickness = th
+        self.layer = "FSilkS"
 
 class Reference(Text):
-    def __init__(self, txt="REF**", dy=1.0):
-        Text.__init__(self, txt, dy)
+    def __init__(self, txt="REF**", dy=1.0, th=0.15):
+        Text.__init__(self, txt, dy, th)
         
 class Name(Text):
-    def __init__(self, txt, dy=1.0):
-        Text.__init__(self, txt, dy)
+    def __init__(self, txt, dy=1.0, th=0.15):
+        Text.__init__(self, txt, dy, th)
+        self.layer = "FFab" 
 
 class Smd(Element):
     def __init__(self, name, s, p=(0,0)):

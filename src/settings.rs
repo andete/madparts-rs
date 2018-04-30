@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 use cairo;
 
 pub struct Color {
@@ -17,6 +18,20 @@ pub enum Layer {
     FSilkS,
     FFab,
     CrtYd,
+}
+
+impl fmt::Display for Layer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Layer::Background => write!(f, "Background"),
+            Layer::Grid => write!(f, "Grid"),
+            Layer::Axes => write!(f, "Axes"),
+            Layer::FCu => write!(f, "F.Cu"),
+            Layer::FSilkS => write!(f, "F.SilkS"),
+            Layer::FFab => write!(f, "F.Fab"),
+            Layer::CrtYd => write!(f, "F.CrtYd"),
+        }
+    }
 }
 
 pub struct LayerStat {

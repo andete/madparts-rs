@@ -81,7 +81,9 @@ pub struct Text {
     pub y:f64,
     pub dy:f64,
     pub txt:String,
+    pub thickness:f64,
     pub shorten:Option<bool>,
+    pub layer:Layer,
 }
 
 

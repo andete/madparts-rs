@@ -92,7 +92,7 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     Inhibit(false)
 }
 
-pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>, Notebook) {
+pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>, Notebook, Arc<AtomicBool>) {
 
     let window = gtk::Window::new(gtk::WindowType::Toplevel);
 
@@ -101,21 +101,13 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, St
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(350, 70);
 
-    let exit = Arc::new(AtomicBool::new(false));
-    
-    {
-        let exit = exit.clone();
-        window.connect_delete_event(move |_, _| {
-            exit.store(true, Ordering::SeqCst);
-            Inhibit(false)
-        });
-    }
-
     let v_box = gtk::Box::new(gtk::Orientation::Vertical, 10);
 
     let menu_bar = MenuBar::new();
     
     let menu = Menu::new();
+    let export = MenuItem::new_with_label("Export");
+    menu.append(&export);
     let quit = MenuItem::new_with_label("Quit");
     menu.append(&quit);
     let file = MenuItem::new_with_label("File");
@@ -130,12 +122,6 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, St
     menu_bar.append(&file);
     menu_bar.append(&help);
 
-    {
-        let exit = exit.clone();
-        quit.connect_activate(move |_| {
-            exit.store(true, Ordering::SeqCst);
-        });
-    }
 
     let about = {
         let about = AboutDialog::new();
@@ -183,5 +169,25 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, St
     v_box.pack_start(&statusbar, false, false, 0);
 
     window.add(&v_box);
-    (window, statusbar, input_buffer, exit, notebook)
+
+    // exit handling
+    let exit = Arc::new(AtomicBool::new(false));
+    let exit2 = exit.clone();
+    window.connect_delete_event(move |_, _| {
+        exit2.store(true, Ordering::SeqCst);
+        Inhibit(false)
+    });
+    let exit2 = exit.clone();
+    quit.connect_activate(move |_| {
+        exit2.store(true, Ordering::SeqCst);
+    });
+    
+    // save handling
+    let save = Arc::new(AtomicBool::new(false));
+    let save2 = save.clone();
+    export.connect_activate(move |_| {
+        save2.store(true, Ordering::SeqCst);
+    });
+    
+    (window, statusbar, input_buffer, exit, notebook, save)
 }

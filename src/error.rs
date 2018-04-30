@@ -15,6 +15,7 @@ pub enum MpError {
     Python(String),
     Other(String),
     Json(String),
+    Save(String),
 }
 
 impl From<glib::BoolError> for MpError {
