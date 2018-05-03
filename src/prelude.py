@@ -134,3 +134,14 @@ def dual(pad, dx, dy, n):
     for i in range(0, n2):
         l.append(pad.at(i+1+n2, dx/2, dyn/2 - dy/2 - dy*i))
     return l
+
+def single(pad, dy, n, name=None):
+    l = []
+    dyn = float(dy)*n
+    for i in range(0, n):
+        if name:
+            name2 = name
+        else:
+            name2 = i+1
+        l.append(pad.at(name2, 0, -dyn/2 + dy/2 + dy*i))
+    return l

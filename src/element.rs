@@ -63,6 +63,7 @@ pub struct Rect {
     pub w:f64,
     pub filled:bool,
     pub layer:Layer,
+    pub corner:Option<f64>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -281,7 +282,12 @@ impl DrawElement for Rect {
             } else {
                 cr.set_line_width(self.w);
                 cr.set_line_join(cairo::enums::LineJoin::Round);
-                cr.move_to(self.x-self.dx/2.0,self.y-self.dy/2.0);
+                if let Some(corner) = self.corner {
+                    cr.move_to(self.x-self.dx/2.0,self.y-self.dy/2.0+corner);
+                    cr.line_to(self.x-self.dx/2.0+corner,self.y-self.dy/2.0);
+                } else {
+                    cr.move_to(self.x-self.dx/2.0,self.y-self.dy/2.0);
+                }
                 cr.line_to(self.x+self.dx/2.0,self.y-self.dy/2.0);
                 cr.line_to(self.x+self.dx/2.0,self.y+self.dy/2.0);
                 cr.line_to(self.x-self.dx/2.0,self.y+self.dy/2.0);
@@ -418,6 +424,7 @@ impl ApplyFootprint for Rect {
         if self.filled {
             unimplemented!();
         } else {
+            // TODO: corner export
             f.lines.push(Line {
                 x1:self.x-self.dx/2.0, y1:self.y-self.dy/2.0,
                 x2:self.x+self.dx/2.0, y2:self.y-self.dy/2.0,

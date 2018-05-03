@@ -6,6 +6,7 @@ def footprint():
     reference.y = -2.54
     
     fab = FFab(2, 3)
+    fab.corner = 0.4
     
     crtyd = CrtYd(1.9+0.5+0.5, 3.5)
 
@@ -13,15 +14,14 @@ def footprint():
     smds = dual(smd, 1.9, 0.5, 10)
     #q = 5/0
 
-    # TODO: add thermal vias
-    via1 = Pad(11, 0.4, 0.2)
-    via2 = Pad(11, 0.4, 0.2)
-    via2.y = 0.95
-    via3 = Pad(11, 0.4, 0.2)
-    via3.y = -0.95
-    vias = [via1, via2, via3]
+    via = Pad(11, 0.4, 0.2)
+    vias = single(via, 0.95, 3, 11)
     
     ep = Smd(11, (0.84, 2.4))
+
+    l1 = Line((-1, 1.65), (1, 1.65))
+    l2 = Line((-1.35, -1.65), (1, -1.65))
+    lines = [l1, l2]
     
-    return [name, reference, fab, crtyd, ep] + smds + vias
+    return [name, reference, fab, crtyd, ep] + smds + vias + lines
  
