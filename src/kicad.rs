@@ -69,6 +69,16 @@ pub fn save(elements:&Vec<Element>, filename:PathBuf) -> Result<(), MpError> {
         write!(f, "  (pad {} thru_hole circle (at {} {}) (size {} {}) (drill {}) (layers {}))\n", pad.name, pad.x, pad.y, pad.dx, pad.dy, pad.drill, layers)?;
     }
 
+    for rect in &footprint.rects {
+        write!(f, "  (fp_poly (pts ")?;
+        write!(f, "(xy {} {})", rect.x-rect.dx/2.0, rect.y-rect.dy/2.0)?;
+        write!(f, "(xy {} {})", rect.x+rect.dx/2.0, rect.y-rect.dy/2.0)?;
+        write!(f, "(xy {} {})", rect.x+rect.dx/2.0, rect.y+rect.dy/2.0)?;
+        write!(f, "(xy {} {})", rect.x-rect.dx/2.0, rect.y+rect.dy/2.0)?;
+        write!(f, "(xy {} {})", rect.x-rect.dx/2.0, rect.y-rect.dy/2.0)?;
+        write!(f, ") (layer {}) (width {}))\n", rect.layer, rect.w)?;
+    }
+
     // TODO model...
     
     write!(f, ")\n")?;

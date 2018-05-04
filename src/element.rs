@@ -43,7 +43,7 @@ pub trait ApplyFootprint {
     fn apply_footprint(&self, &mut kicad::Footprint);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Element {
     Rect(Rect),
     Line(Line),
@@ -54,7 +54,7 @@ pub enum Element {
     PythonError(PythonError),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Rect {
     pub x:f64,
     pub y:f64,
@@ -123,12 +123,12 @@ pub struct Pad {
     pub layers:Vec<Layer>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Name {
     pub text:Text,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Reference {
     pub text:Text,
 }
@@ -393,7 +393,7 @@ impl DrawElement for Element {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct PythonError {
     pub message:String
 }
@@ -424,7 +424,7 @@ impl ApplyFootprint for Element {
 impl ApplyFootprint for Rect {
     fn apply_footprint(&self, f:&mut kicad::Footprint) {
         if self.filled {
-            unimplemented!();
+            f.rects.push(self.clone());
         } else {
             // TODO: corner export
             f.lines.push(Line {
