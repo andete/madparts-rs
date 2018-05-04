@@ -17,6 +17,7 @@ pub struct Footprint {
     pub pad:Vec<Pad>,
     pub smd:Vec<Smd>,
     pub lines:Vec<Line>,
+    pub rects:Vec<Rect>,
     
 }
 
@@ -59,11 +60,13 @@ pub fn save(elements:&Vec<Element>, filename:PathBuf) -> Result<(), MpError> {
     }
 
     for pad in &footprint.smd {
-        write!(f, "  (pad {} smd rect (at {} {}) (size {} {}) (layers F.Cu F.Paste F.Mask))\n", pad.name, pad.x, pad.y, pad.dx, pad.dy)?;
+        let layers = pad.layers.iter().map(|l| format!("{}", l)).collect::<Vec<String>>().join(" ");
+        write!(f, "  (pad {} smd rect (at {} {}) (size {} {}) (layers {}))\n", pad.name, pad.x, pad.y, pad.dx, pad.dy, layers)?;
     }
 
     for pad in &footprint.pad {
-        write!(f, "  (pad {} thru_hole circle (at {} {}) (size {} {}) (drill {}) (layers *.Cu *.Mask))\n", pad.name, pad.x, pad.y, pad.dx, pad.dy, pad.drill)?;
+        let layers = pad.layers.iter().map(|l| format!("{}", l)).collect::<Vec<String>>().join(" ");
+        write!(f, "  (pad {} thru_hole circle (at {} {}) (size {} {}) (drill {}) (layers {}))\n", pad.name, pad.x, pad.y, pad.dx, pad.dy, pad.drill, layers)?;
     }
 
     // TODO model...

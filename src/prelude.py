@@ -34,17 +34,29 @@ class Rect(Element):
         self.dy = dy
         self.w = w
         self.filled = False
-        self.layer = "FSilkS"
+        self.layer = "F.SilkS"
 
-class CrtYd(Rect):
+class FCrtYd(Rect):
     def __init__(self, dx, dy, w=0.05):
         Rect.__init__(self, dx, dy, w)
-        self.layer = "CrtYd"
+        self.layer = "F.CrtYd"
 
 class FFab(Rect):
     def __init__(self, dx, dy, w=0.1):
         Rect.__init__(self, dx, dy, w)
-        self.layer = "FFab"
+        self.layer = "F.Fab"
+
+class FPaste(Rect):
+    def __init__(self, dx, dy, w=0.0):
+        Rect.__init__(self, dx, dy, w)
+        self.layer = "F.Paste"
+        self.filled = True
+
+class FMask(Rect):
+    def __init__(self, dx, dy, w=0.0):
+        Rect.__init__(self, dx, dy, w)
+        self.layer = "F.Mask"
+        self.filled = True
         
 class Line(Element):
     def __init__(self, p1, p2, w=0.1):
@@ -52,7 +64,7 @@ class Line(Element):
         (self.x1, self.y1) = p1
         (self.x2, self.y2) = p2
         self.w = w
-        self.layer = "FSilkS"
+        self.layer = "F.SilkS"
 
 class Text(Element):
     def __init__(self, txt, dy=1.0, th=0.1):
@@ -62,7 +74,7 @@ class Text(Element):
         self.x = 0
         self.y = 0
         self.thickness = th
-        self.layer = "FSilkS"
+        self.layer = "F.SilkS"
 
 class Reference(Text):
     def __init__(self, txt="REF**", dy=1.0, th=0.15):
@@ -71,7 +83,7 @@ class Reference(Text):
 class Name(Text):
     def __init__(self, txt, dy=1.0, th=0.15):
         Text.__init__(self, txt, dy, th)
-        self.layer = "FFab" 
+        self.layer = "F.Fab" 
 
 class Smd(Element):
     def __init__(self, name, s, p=(0,0)):
@@ -79,6 +91,7 @@ class Smd(Element):
         self.name = str(name)
         (self.dx, self.dy) = s
         (self.x, self.y) = p
+        self.layers = ["F.Cu", "F.Paste", "F.Mask"]
 
     def at(self, name, x, y):
         n = copy.copy(self)
@@ -95,6 +108,7 @@ class Pad(Element):
         self.dy = s
         (self.x, self.y) = p
         self.drill = d
+        self.layers = ["*.Cu", "*.Mask"]
 
     def at(self, name, x, y):
         n = copy.copy(self)
@@ -125,14 +139,22 @@ class PythonError(Element):
 
 # Hole ?
 
-def dual(pad, dx, dy, n):
+def dual(pad, dx, dy, n, name=None):
     l = []
     n2 = int(n/2)
     dyn = float(dy)*n/2
     for i in range(0, n2):
-        l.append(pad.at(i+1, -dx/2, -dyn/2 + dy/2 + dy*i))
+        if name:
+            name2 = name
+        else:
+            name2 = i+1
+        l.append(pad.at(name2, -dx/2, -dyn/2 + dy/2 + dy*i))
     for i in range(0, n2):
-        l.append(pad.at(i+1+n2, dx/2, dyn/2 - dy/2 - dy*i))
+        if name:
+            name2 = name
+        else:
+            name2 = i+1+n2
+        l.append(pad.at(name2, dx/2, dyn/2 - dy/2 - dy*i))
     return l
 
 def single(pad, dy, n, name=None):

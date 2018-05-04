@@ -8,7 +8,7 @@ def footprint():
     fab = FFab(2, 3)
     fab.corner = 0.4
     
-    crtyd = CrtYd(1.9+0.5+0.5, 3.5)
+    crtyd = FCrtYd(1.9+0.5+0.5, 3.5)
 
     smd = Smd(1, (0.5, 0.25))
     smds = dual(smd, 1.9, 0.5, 10)

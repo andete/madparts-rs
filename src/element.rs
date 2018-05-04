@@ -109,6 +109,7 @@ pub struct Smd {
     pub y:f64,
     pub dx:f64,
     pub dy:f64,
+    pub layers:Vec<Layer>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -119,6 +120,7 @@ pub struct Pad {
     pub dx:f64,
     pub dy:f64,
     pub drill: f64,
+    pub layers:Vec<Layer>,
 }
 
 #[derive(Debug)]
@@ -142,7 +144,7 @@ impl TryFrom<String> for Element {
             }
             serde_json::Value::String(ref s) => {
                 match s.as_str() {
-                    "Rect" | "FFab" | "CrtYd" => {
+                    "Rect" | "FFab" | "FCrtYd" | "FPaste" | "FMask" => {
                         let r:Rect = serde_json::from_str(&json)?;
                         Ok(Element::Rect(r))
                     },
@@ -193,10 +195,10 @@ impl BoundingBox for Line {
 
 impl BoundingBox for Rect {
     fn bounding_box(&self) -> Bound {
-        let min_x = self.x - self.dx/2.0;
-        let max_x = self.x + self.dx/2.0;
-        let min_y = self.y - self.dy/2.0;
-        let max_y = self.y + self.dy/2.0;
+        let min_x = self.x - self.dx/2.0 - self.w/2.0;
+        let max_x = self.x + self.dx/2.0 + self.w/2.0;
+        let min_y = self.y - self.dy/2.0 - self.w/2.0;
+        let max_y = self.y + self.dy/2.0 + self.w/2.0;
         Bound { min_x, min_y, max_x, max_y }
     }
 }

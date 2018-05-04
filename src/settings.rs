@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use cairo;
 
+#[derive(Clone, Copy)]
 pub struct Color {
     red:f64,
     green:f64,
@@ -14,10 +15,22 @@ pub enum Layer {
     Background,
     Grid,
     Axes,
+    #[serde(rename = "F.Cu")]
     FCu,
+    #[serde(rename = "*.Cu")]
+    Cu,
+    #[serde(rename = "F.SilkS")]
     FSilkS,
+    #[serde(rename = "F.Fab")]
     FFab,
-    CrtYd,
+    #[serde(rename = "F.CrtYd")]
+    FCrtYd,
+    #[serde(rename = "F.Mask")]
+    FMask,
+    #[serde(rename = "*.Mask")]
+    Mask,
+    #[serde(rename = "F.Paste")]
+    FPaste,
 }
 
 impl fmt::Display for Layer {
@@ -27,9 +40,13 @@ impl fmt::Display for Layer {
             Layer::Grid => write!(f, "Grid"),
             Layer::Axes => write!(f, "Axes"),
             Layer::FCu => write!(f, "F.Cu"),
+            Layer::Cu => write!(f, "*.Cu"),
             Layer::FSilkS => write!(f, "F.SilkS"),
             Layer::FFab => write!(f, "F.Fab"),
-            Layer::CrtYd => write!(f, "F.CrtYd"),
+            Layer::FCrtYd => write!(f, "F.CrtYd"),
+            Layer::FMask => write!(f, "F.Mask"),
+            Layer::Mask => write!(f, "*.Mask"),
+            Layer::FPaste => write!(f, "F.Paste"),
         }
     }
 }
@@ -63,19 +80,28 @@ lazy_static! {
             color:Color { red:0.0, green:0.0, blue:0.52, alpha:1.0 },
             z:-80,
         });
-        m.insert(Layer::FCu, LayerStat {
-            color:Color { red:1.0, green:0.0, blue:0.0, alpha:0.52 },
-            z:1,
+        
+        let color = Color { red:1.0, green:0.0, blue:0.0, alpha:0.52 };
+        m.insert(Layer::FCu, LayerStat { color, z:1 });
+        m.insert(Layer::Cu, LayerStat { color, z:1 });
+        
+        m.insert(Layer::FMask, LayerStat {
+            color:Color { red:0.0, green:0.00, blue:1.00, alpha:0.52 },
+            z:8,
+        });
+        m.insert(Layer::FPaste, LayerStat {
+            color:Color { red:1.0, green:0.82, blue:0.26, alpha:0.83 },
+            z:9,
         });
         m.insert(Layer::FSilkS, LayerStat {
-            color:Color { red:0.0, green:0.52, blue:0.52, alpha:1.0 },
-            z:10,
+            color:Color { red:1.0, green:1.0, blue:1.0, alpha:0.83 },
+            z:11,
         });
         m.insert(Layer::FFab, LayerStat {
             color:Color { red:1.0, green:1.0, blue:0.0, alpha:0.76 },
             z:12,
         });
-        m.insert(Layer::CrtYd, LayerStat {
+        m.insert(Layer::FCrtYd, LayerStat {
             color:Color { red:0.5, green:0.5, blue:0.5, alpha:0.76 },
             z:13,
         });
