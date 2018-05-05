@@ -14,7 +14,7 @@ def footprint():
     smds = dual(smd, 1.9, 0.5, 10)
     #q = 5/0
 
-    via = Pad(11, 0.4, 0.2)
+    via = Pad(11, 0.5, 0.2)
     vias = single(via, 0.95, 3, 11)
     
     ep = Smd(11, (0.84, 2.4))
