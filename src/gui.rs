@@ -9,7 +9,10 @@ use gdk_pixbuf::Pixbuf;
 use gio::MemoryInputStream;
 use glib::Bytes;
 
+use gtk::{FileChooserDialog, FileChooserAction, FileChooserExt, ResponseType};
+
 use std::fs;
+use std::path::PathBuf;
 use std::sync::{Arc,Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -112,10 +115,6 @@ impl GuiData {
 
     pub fn set_title(&self, title:&str) {
         self.window.set_title(title);
-    }
-
-    pub fn get_window(&self) -> &Window {
-        &self.window
     }
 
     pub fn want_exit(&self) -> bool {
@@ -247,5 +246,24 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> GuiData {
         notebook,
         exit,
         save
+    }
+}
+
+pub fn get_export_filename(ui:&GuiData, filename:String) -> Option<PathBuf> {
+    let d = FileChooserDialog::with_buttons(
+        Some("Export kicad file"),
+        Some(&ui.window),
+        FileChooserAction::Save,
+        &[("_Cancel", ResponseType::Cancel), ("_Export", ResponseType::Accept)]
+    );
+    d.set_current_name(filename);
+    let res:ResponseType = d.run().into();
+    if res == ResponseType::Accept {
+        let filename = d.get_filename().unwrap();
+        d.destroy();
+        Some(filename)
+    } else {
+        d.destroy();
+        None
     }
 }

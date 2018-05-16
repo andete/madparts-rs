@@ -39,9 +39,6 @@ use inotify::{WatchMask, Inotify};
 
 use pyo3::{Python, ObjectProtocol, PyList};
 
-use gtk::{WidgetExt, DialogExt};
-use gtk::{FileChooserDialog, FileChooserAction, FileChooserExt, ResponseType};
-
 use error::MpError;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -145,25 +142,16 @@ fn main() -> Result<(), MpError> {
             break;
         }
         if ui.want_save() {
-            let d = FileChooserDialog::with_buttons(
-                Some("Export kicad file"),
-                Some(ui.get_window()),
-                FileChooserAction::Save,
-                 &[("_Cancel", ResponseType::Cancel), ("_Export", ResponseType::Accept)]
-            );
             let filename = {
                 let draw_state = draw_state.lock().unwrap();
                 format!("{}.kicad_mod", draw_state.name())
             };
-            d.set_current_name(filename);
-            let res:ResponseType = d.run().into();
-            if res == ResponseType::Accept {
+            if let Some(filename) = gui::get_export_filename(&ui, filename)  {
                 let draw_state = draw_state.lock().unwrap();
-                let filename = d.get_filename().unwrap();
                 kicad::save(&draw_state.elements, filename)?;
-                // TODO: handle failure to save: show error message to user
+            } else {
+                // handle failure to select filename ?
             }
-            d.destroy();
         }
         gtk::main_iteration();
         if update_input.compare_and_swap(true, false, Ordering::SeqCst) {
