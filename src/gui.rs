@@ -92,7 +92,38 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
     Inhibit(false)
 }
 
-pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, Statusbar, TextBuffer, Arc<AtomicBool>, Notebook, Arc<AtomicBool>) {
+pub struct GuiData {
+    window:Window,
+    pub statusbar:Statusbar,
+    pub input_buffer:TextBuffer,
+    pub notebook:Notebook,
+    exit:Arc<AtomicBool>,
+    pub save:Arc<AtomicBool>,
+}
+
+impl GuiData {
+    pub fn show_all(&self) {
+        self.window.show_all();
+    }
+
+    pub fn draw(&self) {
+        self.window.queue_draw();
+    }
+
+    pub fn set_title(&self, title:&str) {
+        self.window.set_title(title);
+    }
+
+    pub fn get_window(&self) -> &Window {
+        &self.window
+    }
+
+    pub fn is_exit(&self) -> bool {
+        self.exit.load(Ordering::SeqCst)
+    }
+}
+
+pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> GuiData {
 
     let window = gtk::Window::new(gtk::WindowType::Toplevel);
 
@@ -188,6 +219,13 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, St
     export.connect_activate(move |_| {
         save2.store(true, Ordering::SeqCst);
     });
-    
-    (window, statusbar, input_buffer, exit, notebook, save)
+
+    GuiData {
+        window,
+        statusbar,
+        input_buffer,
+        notebook,
+        exit,
+        save
+    }
 }

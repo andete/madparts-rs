@@ -39,7 +39,7 @@ use inotify::{WatchMask, Inotify};
 
 use pyo3::{Python, ObjectProtocol, PyList};
 
-use gtk::{WidgetExt, StatusbarExt, TextBufferExt, GtkWindowExt, DialogExt};
+use gtk::{WidgetExt, StatusbarExt, TextBufferExt, DialogExt};
 use gtk::{NotebookExtManual};
 use gtk::{FileChooserDialog, FileChooserAction, FileChooserExt, ResponseType};
 
@@ -107,7 +107,7 @@ fn main() -> Result<(), MpError> {
 
     let draw_state = Arc::new(Mutex::new(DrawState::default()));
     
-    let (window, statusbar, input_buffer, exit, notebook, save) = gui::make_gui(&filename, draw_state.clone());
+    let ui = gui::make_gui(&filename, draw_state.clone());
     
     let update_input = Arc::new(AtomicBool::new(true));
     let update_input_timeout_loop = update_input.clone();
@@ -127,7 +127,7 @@ fn main() -> Result<(), MpError> {
         glib::Continue(true)
     });
     
-    window.show_all();
+    ui.show_all();
 
     let gil = Python::acquire_gil();
     let py = gil.python();
@@ -142,13 +142,13 @@ fn main() -> Result<(), MpError> {
     info!("prelude loaded.");
     
     loop {
-        if exit.load(Ordering::SeqCst) {
+        if ui.is_exit() {
             break;
         }
-        if save.compare_and_swap(true, false, Ordering::SeqCst) {
+        if ui.save.compare_and_swap(true, false, Ordering::SeqCst) {
             let d = FileChooserDialog::with_buttons(
                 Some("Export kicad file"),
-                Some(&window),
+                Some(ui.get_window()),
                 FileChooserAction::Save,
                  &[("_Cancel", ResponseType::Cancel), ("_Export", ResponseType::Accept)]
             );
@@ -168,10 +168,10 @@ fn main() -> Result<(), MpError> {
         }
         gtk::main_iteration();
         if update_input.compare_and_swap(true, false, Ordering::SeqCst) {
-            statusbar.push(1, "Updating...");
+            ui.statusbar.push(1, "Updating...");
             let data = fs::read_to_string(&filename).unwrap();
-            input_buffer.set_text(&data);
-            statusbar.pop(1);
+            ui.input_buffer.set_text(&data);
+            ui.statusbar.pop(1);
             debug!("updated");
             let res = match py.eval(&format!("handle_load_python(\"{}\")", filename), None, None) {
                 Ok(res) => res,
@@ -198,9 +198,9 @@ fn main() -> Result<(), MpError> {
                     info!("x: '{:?}'", x);
                     if let element::Element::PythonError(element::PythonError { message }) = x {
                         let message = message.replace("<string>", &filename);
-                        input_buffer.set_text(&message);
+                        ui.input_buffer.set_text(&message);
                         info!("SET TO ZERO?!");
-                        notebook.set_current_page(Some(0));
+                        ui.notebook.set_current_page(Some(0));
                         failed = true;
                         break;
                     }
@@ -214,11 +214,11 @@ fn main() -> Result<(), MpError> {
             info!("Bound: {:?}", draw_state.bound);
             let mut title = format!("madparts (rustic edition) {} : ", VERSION);
             title.push_str(&draw_state.name());
-            window.set_title(&title);
-            statusbar.pop(0);
-            statusbar.push(0, &format!("{} ready.", draw_state.name()));
-            notebook.set_current_page(Some(1));
-            window.queue_draw();
+            ui.set_title(&title);
+            ui.statusbar.pop(0);
+            ui.statusbar.push(0, &format!("{} ready.", draw_state.name()));
+            ui.notebook.set_current_page(Some(1));
+            ui.draw();
         }
     }
     Ok(())
