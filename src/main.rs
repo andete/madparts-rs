@@ -31,6 +31,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::convert::TryFrom;
+use std::fs;
 
 use clap::{Arg, App};
 
@@ -68,7 +69,7 @@ impl DrawState {
     }
 }
 
-fn run() -> Result<(), MpError> {
+fn main() -> Result<(), MpError> {
     std::env::set_var("RUST_LOG","debug");
     env_logger::init();
     let matches = App::new("madparts")
@@ -168,7 +169,7 @@ fn run() -> Result<(), MpError> {
         gtk::main_iteration();
         if update_input.compare_and_swap(true, false, Ordering::SeqCst) {
             statusbar.push(1, "Updating...");
-            let data = util::read_file(&filename).unwrap();
+            let data = fs::read_to_string(&filename).unwrap();
             input_buffer.set_text(&data);
             statusbar.pop(1);
             debug!("updated");
@@ -221,10 +222,6 @@ fn run() -> Result<(), MpError> {
         }
     }
     Ok(())
-}
-
-fn main() {
-    util::main_run(run);
 }
 
 mod element;

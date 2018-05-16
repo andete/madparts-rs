@@ -9,10 +9,10 @@ use gdk_pixbuf::Pixbuf;
 use gio::MemoryInputStream;
 use glib::Bytes;
 
+use std::fs;
 use std::sync::{Arc,Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use util;
 use ::VERSION;
 
 use ::DrawState;
@@ -151,7 +151,7 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> (Window, St
     v_box.pack_start(&notebook, true, true, 0);
 
     let input_buffer = TextBuffer::new(None);
-    let data = util::read_file(&filename).unwrap();
+    let data = fs::read_to_string(&filename).unwrap();
     input_buffer.set_text(&data);
     let input = TextView::new_with_buffer(&input_buffer);
     input.set_editable(false);
