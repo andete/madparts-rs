@@ -39,7 +39,7 @@ use inotify::{WatchMask, Inotify};
 
 use pyo3::{Python, ObjectProtocol, PyList};
 
-use gtk::{WidgetExt, TextBufferExt, DialogExt};
+use gtk::{WidgetExt, DialogExt};
 use gtk::{FileChooserDialog, FileChooserAction, FileChooserExt, ResponseType};
 
 use error::MpError;
@@ -169,7 +169,7 @@ fn main() -> Result<(), MpError> {
         if update_input.compare_and_swap(true, false, Ordering::SeqCst) {
             ui.set_status("Updating...");
             let data = fs::read_to_string(&filename).unwrap();
-            ui.input_buffer.set_text(&data);
+            ui.set_input_text(&data);
             debug!("updated");
             let res = match py.eval(&format!("handle_load_python(\"{}\")", filename), None, None) {
                 Ok(res) => res,
@@ -196,7 +196,7 @@ fn main() -> Result<(), MpError> {
                     info!("x: '{:?}'", x);
                     if let element::Element::PythonError(element::PythonError { message }) = x {
                         let message = message.replace("<string>", &filename);
-                        ui.input_buffer.set_text(&message);
+                        ui.set_input_text(&message);
                         ui.show_drawing_page();
                         failed = true;
                         break;

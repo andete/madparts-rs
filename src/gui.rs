@@ -95,7 +95,7 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
 pub struct GuiData {
     window:Window,
     statusbar:Statusbar,
-    pub input_buffer:TextBuffer,
+    input_buffer:TextBuffer,
     notebook:Notebook,
     exit:Arc<AtomicBool>,
     save:Arc<AtomicBool>,
@@ -136,6 +136,10 @@ impl GuiData {
     pub fn set_status(&self, status:&str) {
         self.statusbar.pop(0);
         self.statusbar.push(0, status);
+    }
+
+    pub fn set_input_text(&self, txt:&str) {
+        self.input_buffer.set_text(txt);
     }
 }
 
