@@ -39,8 +39,7 @@ use inotify::{WatchMask, Inotify};
 
 use pyo3::{Python, ObjectProtocol, PyList};
 
-use gtk::{WidgetExt, StatusbarExt, TextBufferExt, DialogExt};
-use gtk::{NotebookExtManual};
+use gtk::{WidgetExt, TextBufferExt, DialogExt};
 use gtk::{FileChooserDialog, FileChooserAction, FileChooserExt, ResponseType};
 
 use error::MpError;
@@ -168,10 +167,9 @@ fn main() -> Result<(), MpError> {
         }
         gtk::main_iteration();
         if update_input.compare_and_swap(true, false, Ordering::SeqCst) {
-            ui.statusbar.push(1, "Updating...");
+            ui.set_status("Updating...");
             let data = fs::read_to_string(&filename).unwrap();
             ui.input_buffer.set_text(&data);
-            ui.statusbar.pop(1);
             debug!("updated");
             let res = match py.eval(&format!("handle_load_python(\"{}\")", filename), None, None) {
                 Ok(res) => res,
@@ -199,8 +197,7 @@ fn main() -> Result<(), MpError> {
                     if let element::Element::PythonError(element::PythonError { message }) = x {
                         let message = message.replace("<string>", &filename);
                         ui.input_buffer.set_text(&message);
-                        info!("SET TO ZERO?!");
-                        ui.notebook.set_current_page(Some(0));
+                        ui.show_drawing_page();
                         failed = true;
                         break;
                     }
@@ -215,9 +212,8 @@ fn main() -> Result<(), MpError> {
             let mut title = format!("madparts (rustic edition) {} : ", VERSION);
             title.push_str(&draw_state.name());
             ui.set_title(&title);
-            ui.statusbar.pop(0);
-            ui.statusbar.push(0, &format!("{} ready.", draw_state.name()));
-            ui.notebook.set_current_page(Some(1));
+            ui.set_status(&format!("{} ready.", draw_state.name()));
+            ui.show_text_page();
             ui.draw();
         }
     }

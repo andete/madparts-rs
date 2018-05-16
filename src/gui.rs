@@ -94,9 +94,9 @@ fn draw_fn(draw_state:Arc<Mutex<DrawState>>, area:&DrawingArea, cr:&cairo::Conte
 
 pub struct GuiData {
     window:Window,
-    pub statusbar:Statusbar,
+    statusbar:Statusbar,
     pub input_buffer:TextBuffer,
-    pub notebook:Notebook,
+    notebook:Notebook,
     exit:Arc<AtomicBool>,
     save:Arc<AtomicBool>,
 }
@@ -124,6 +124,18 @@ impl GuiData {
 
     pub fn want_save(&self) -> bool {
         self.save.compare_and_swap(true, false, Ordering::SeqCst)
+    }
+
+    pub fn show_drawing_page(&self) {
+        self.notebook.set_current_page(Some(0));
+    }
+    
+    pub fn show_text_page(&self) {
+        self.notebook.set_current_page(Some(1));
+    }
+    pub fn set_status(&self, status:&str) {
+        self.statusbar.pop(0);
+        self.statusbar.push(0, status);
     }
 }
 
