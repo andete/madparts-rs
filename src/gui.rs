@@ -99,6 +99,7 @@ pub struct GuiData {
     window:Window,
     statusbar:Statusbar,
     input_buffer:TextBuffer,
+    klc_buffer:TextBuffer,
     notebook:Notebook,
     exit:Arc<AtomicBool>,
     save:Arc<AtomicBool>,
@@ -214,6 +215,13 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> GuiData {
 
     view.connect_draw(move |a,c| draw_fn(draw_state.clone(), a, c));
     
+    let klc_buffer = TextBuffer::new(None);
+    let klc = TextView::new_with_buffer(&klc_buffer);
+    klc.set_editable(false);
+    let scrolled_klc = ScrolledWindow::new(None, None);
+    scrolled_klc.add(&klc);
+    notebook.append_page(&scrolled_klc, Some(&Label::new(Some("KLC"))));
+    
     let statusbar = Statusbar::new();
     statusbar.push(0, "Ready.");
     v_box.pack_start(&statusbar, false, false, 0);
@@ -243,6 +251,7 @@ pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> GuiData {
         window,
         statusbar,
         input_buffer,
+        klc_buffer,
         notebook,
         exit,
         save

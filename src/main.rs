@@ -170,6 +170,7 @@ fn main() -> Result<(), MpError> {
             let resl:&PyList = res.extract()?;
             let mut draw_state = draw_state.lock().unwrap();
             draw_state.elements.clear();
+            // try to convert python provided elements
             let mut failed = false;
             for i in 0..resl.len() {
                 let item = resl.get_item(i as isize);
@@ -195,6 +196,12 @@ fn main() -> Result<(), MpError> {
             if failed {
                 continue;
             }
+            
+            // TODO
+            // save to temporary file and run KLC
+            // and show result in KLC tab
+            
+            // draw on screen
             draw_state.bound = element::bound(&draw_state.elements);
             info!("Bound: {:?}", draw_state.bound);
             let mut title = format!("madparts (rustic edition) {} : ", VERSION);
