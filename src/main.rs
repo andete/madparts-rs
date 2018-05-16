@@ -142,10 +142,10 @@ fn main() -> Result<(), MpError> {
     info!("prelude loaded.");
     
     loop {
-        if ui.is_exit() {
+        if ui.want_exit() {
             break;
         }
-        if ui.save.compare_and_swap(true, false, Ordering::SeqCst) {
+        if ui.want_save() {
             let d = FileChooserDialog::with_buttons(
                 Some("Export kicad file"),
                 Some(ui.get_window()),

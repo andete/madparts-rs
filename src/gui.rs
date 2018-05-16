@@ -98,7 +98,7 @@ pub struct GuiData {
     pub input_buffer:TextBuffer,
     pub notebook:Notebook,
     exit:Arc<AtomicBool>,
-    pub save:Arc<AtomicBool>,
+    save:Arc<AtomicBool>,
 }
 
 impl GuiData {
@@ -118,8 +118,12 @@ impl GuiData {
         &self.window
     }
 
-    pub fn is_exit(&self) -> bool {
+    pub fn want_exit(&self) -> bool {
         self.exit.load(Ordering::SeqCst)
+    }
+
+    pub fn want_save(&self) -> bool {
+        self.save.compare_and_swap(true, false, Ordering::SeqCst)
     }
 }
 
