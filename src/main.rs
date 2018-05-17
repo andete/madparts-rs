@@ -218,6 +218,7 @@ mod error;
 mod gui;
 mod kicad;
 mod klc;
+mod layers;
 mod settings;
 mod util;
 

@@ -21,7 +21,7 @@ use ::VERSION;
 use ::DrawState;
 
 use element::DrawElement;
-use settings::{LAYER, LAYER_Z, Layer};
+use layers::{LAYER, LAYER_Z, Layer};
 
 const ICON:&'static str = include_str!("../media/icon.svg");
 

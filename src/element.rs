@@ -6,7 +6,7 @@ use error::MpError;
 
 use serde_json;
 
-use settings::{Layer, LAYER};
+use layers::{Layer, LAYER};
 
 use std::convert::TryFrom;
 
