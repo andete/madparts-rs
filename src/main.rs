@@ -3,29 +3,25 @@
 #![feature(proc_macro, specialization, const_fn, try_from)]
 
 extern crate cairo;
-extern crate clap;
 extern crate chrono;
+extern crate clap;
 extern crate env_logger;
-extern crate pyo3;
-
 extern crate gdk_pixbuf;
 extern crate gio;
 extern crate glib;
 extern crate gtk;
-
 extern crate inotify;
 #[macro_use]
-extern crate log;
-extern crate range;
-
-#[macro_use]
 extern crate lazy_static;
-
+#[macro_use]
+extern crate log;
+extern crate pyo3;
+extern crate range;
 extern crate serde;
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
-
+extern crate tempfile;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -148,7 +144,8 @@ fn main() -> Result<(), MpError> {
             };
             if let Some(filename) = gui::get_export_filename(&ui, filename)  {
                 let draw_state = draw_state.lock().unwrap();
-                kicad::save(&draw_state.elements, filename)?;
+                let mut f = fs::File::create(filename)?;
+                kicad::save(&draw_state.elements, &mut f)?;
             } else {
                 // handle failure to select filename ?
             }
@@ -197,9 +194,10 @@ fn main() -> Result<(), MpError> {
                 continue;
             }
             
-            // TODO
             // save to temporary file and run KLC
             // and show result in KLC tab
+            let klc_txt = klc::run_klc(&draw_state)?;
+            ui.set_klc_text(&klc_txt);
             
             // draw on screen
             draw_state.bound = element::bound(&draw_state.elements);
@@ -219,5 +217,7 @@ mod element;
 mod error;
 mod gui;
 mod kicad;
+mod klc;
 mod settings;
 mod util;
+

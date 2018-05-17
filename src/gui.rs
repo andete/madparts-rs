@@ -141,6 +141,10 @@ impl GuiData {
     pub fn set_input_text(&self, txt:&str) {
         self.input_buffer.set_text(txt);
     }
+    
+    pub fn set_klc_text(&self, txt:&str) {
+        self.klc_buffer.set_text(txt);
+    }
 }
 
 pub fn make_gui(filename: &str, draw_state:Arc<Mutex<DrawState>>) -> GuiData {

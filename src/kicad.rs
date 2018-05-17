@@ -6,8 +6,6 @@ use std::io::Write;
 use chrono::{DateTime,Local};
 use error::MpError;
 
-use std::path::PathBuf;
-
 #[derive(Default)]
 pub struct Footprint {
     pub name:Option<Text>,
@@ -29,9 +27,8 @@ fn to_footprint(elements:&Vec<Element>) -> Footprint {
     f
 }
 
-pub fn save(elements:&Vec<Element>, filename:PathBuf) -> Result<(), MpError> {
+pub fn save(elements:&Vec<Element>, f:&mut fs::File) -> Result<(), MpError> {
     let footprint = to_footprint(elements);
-    let mut f = fs::File::create(filename)?;
     // TODO
     let name = footprint.name.as_ref().ok_or(MpError::Save("footprint is missing a name".into()))?;
     let reference = footprint.reference.as_ref().ok_or(MpError::Save("footprint is missing a reference".into()))?;
