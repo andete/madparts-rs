@@ -94,6 +94,8 @@ fn main() -> Result<(), MpError> {
         },
     };
 
+    let settings = settings::load_settings();
+
     // close_write,moved_to,create indicate the file was possibly messed with
     let _file_watch = ino.add_watch(&filedir, WatchMask::CREATE | WatchMask::MOVED_TO | WatchMask::CLOSE_WRITE).unwrap();
 
@@ -196,8 +198,12 @@ fn main() -> Result<(), MpError> {
             
             // save to temporary file and run KLC
             // and show result in KLC tab
-            let klc_txt = klc::run_klc(&draw_state)?;
-            ui.set_klc_text(&klc_txt);
+            if let Some(ref klc_dir) = settings.klc_dir {
+                let klc_txt = klc::run_klc(&draw_state, klc_dir)?;
+                ui.set_klc_text(&klc_txt);
+            } else {
+                ui.set_klc_text("KLC not configured");
+            }
             
             // draw on screen
             draw_state.bound = element::bound(&draw_state.elements);
