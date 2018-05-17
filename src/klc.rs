@@ -8,9 +8,6 @@ use error::MpError;
 use kicad;
 use DrawState;
 
-// python check_kicad_mod.py --nocolor -v /home/joost/prj/madparts-rs/Texas_TSSOP-14_5x4.4x1.2mm_EP.kicad_mod 
-
-
 pub fn run_klc(draw_state:&DrawState, klc_dir:&str) -> Result<String, MpError> {
     let dir = tempdir()?;
     let name = format!("{}.kicad_mod", draw_state.name());
