@@ -1,13 +1,13 @@
+use cairo;
 use std::collections::HashMap;
 use std::fmt;
-use cairo;
 
 #[derive(Clone, Copy)]
 pub struct Color {
-    red:f64,
-    green:f64,
-    blue:f64,
-    alpha:f64,
+    red: f64,
+    green: f64,
+    blue: f64,
+    alpha: f64,
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq, Hash, Clone, Copy)]
@@ -52,12 +52,12 @@ impl fmt::Display for Layer {
 }
 
 pub struct LayerStat {
-    pub color:Color,
-    pub z:i64,
+    pub color: Color,
+    pub z: i64,
 }
 
 impl Color {
-    pub fn set_source(&self, cr:&cairo::Context) {
+    pub fn set_source(&self, cr: &cairo::Context) {
         cr.set_source_rgba(self.red, self.green, self.blue, self.alpha);
     }
 }
@@ -68,44 +68,113 @@ impl Color {
 lazy_static! {
     pub static ref LAYER: HashMap<Layer, LayerStat> = {
         let mut m = HashMap::new();
-        m.insert(Layer::Background, LayerStat {
-            color:Color { red:0.0, green:0.0, blue:0.0, alpha:1.0 },
-            z:-100,
-        });
-        m.insert(Layer::Grid, LayerStat {
-            color:Color { red:0.52, green:0.52, blue:0.52, alpha:1.0 },
-            z:-90,
-        });
-        m.insert(Layer::Axes, LayerStat {
-            color:Color { red:0.0, green:0.0, blue:0.52, alpha:1.0 },
-            z:-80,
-        });
-        
-        let color = Color { red:1.0, green:0.0, blue:0.0, alpha:0.52 };
-        m.insert(Layer::FCu, LayerStat { color, z:1 });
-        m.insert(Layer::Cu, LayerStat { color, z:1 });
-        
-        m.insert(Layer::FMask, LayerStat {
-            color:Color { red:0.0, green:0.00, blue:1.00, alpha:0.52 },
-            z:8,
-        });
-        m.insert(Layer::FPaste, LayerStat {
-            color:Color { red:1.0, green:0.82, blue:0.26, alpha:0.83 },
-            z:9,
-        });
-        m.insert(Layer::FSilkS, LayerStat {
-            color:Color { red:1.0, green:1.0, blue:1.0, alpha:0.83 },
-            z:11,
-        });
-        m.insert(Layer::FFab, LayerStat {
-            color:Color { red:1.0, green:1.0, blue:0.0, alpha:0.76 },
-            z:12,
-        });
-        m.insert(Layer::FCrtYd, LayerStat {
-            color:Color { red:0.5, green:0.5, blue:0.5, alpha:0.76 },
-            z:13,
-        });
-        
+        m.insert(
+            Layer::Background,
+            LayerStat {
+                color: Color {
+                    red: 0.0,
+                    green: 0.0,
+                    blue: 0.0,
+                    alpha: 1.0,
+                },
+                z: -100,
+            },
+        );
+        m.insert(
+            Layer::Grid,
+            LayerStat {
+                color: Color {
+                    red: 0.52,
+                    green: 0.52,
+                    blue: 0.52,
+                    alpha: 1.0,
+                },
+                z: -90,
+            },
+        );
+        m.insert(
+            Layer::Axes,
+            LayerStat {
+                color: Color {
+                    red: 0.0,
+                    green: 0.0,
+                    blue: 0.52,
+                    alpha: 1.0,
+                },
+                z: -80,
+            },
+        );
+
+        let color = Color {
+            red: 1.0,
+            green: 0.0,
+            blue: 0.0,
+            alpha: 0.52,
+        };
+        m.insert(Layer::FCu, LayerStat { color, z: 1 });
+        m.insert(Layer::Cu, LayerStat { color, z: 1 });
+
+        m.insert(
+            Layer::FMask,
+            LayerStat {
+                color: Color {
+                    red: 0.0,
+                    green: 0.00,
+                    blue: 1.00,
+                    alpha: 0.52,
+                },
+                z: 8,
+            },
+        );
+        m.insert(
+            Layer::FPaste,
+            LayerStat {
+                color: Color {
+                    red: 1.0,
+                    green: 0.82,
+                    blue: 0.26,
+                    alpha: 0.83,
+                },
+                z: 9,
+            },
+        );
+        m.insert(
+            Layer::FSilkS,
+            LayerStat {
+                color: Color {
+                    red: 1.0,
+                    green: 1.0,
+                    blue: 1.0,
+                    alpha: 0.83,
+                },
+                z: 11,
+            },
+        );
+        m.insert(
+            Layer::FFab,
+            LayerStat {
+                color: Color {
+                    red: 1.0,
+                    green: 1.0,
+                    blue: 0.0,
+                    alpha: 0.76,
+                },
+                z: 12,
+            },
+        );
+        m.insert(
+            Layer::FCrtYd,
+            LayerStat {
+                color: Color {
+                    red: 0.5,
+                    green: 0.5,
+                    blue: 0.5,
+                    alpha: 0.76,
+                },
+                z: 13,
+            },
+        );
+
         m
     };
     pub static ref LAYER_Z: Vec<(i64, Layer)> = {
@@ -113,7 +182,7 @@ lazy_static! {
         for (ref k, ref x) in LAYER.iter() {
             v.push((x.z, **k));
         }
-        v.sort_by(|(i,_),(j,_)| i.cmp(j));
+        v.sort_by(|(i, _), (j, _)| i.cmp(j));
         v
     };
 }

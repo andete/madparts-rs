@@ -1,14 +1,14 @@
 // (c) 2018 Joost Yervante Damad <joost@damad.be>
 
-use std::process::Command;
 use std::fs::File;
+use std::process::Command;
 
-use tempfile::tempdir;
 use error::MpError;
 use kicad;
+use tempfile::tempdir;
 use DrawState;
 
-pub fn run_klc(draw_state:&DrawState, klc_dir:&str) -> Result<String, MpError> {
+pub fn run_klc(draw_state: &DrawState, klc_dir: &str) -> Result<String, MpError> {
     let dir = tempdir()?;
     let name = format!("{}.kicad_mod", draw_state.name());
     let file_path = dir.path().join(&name);

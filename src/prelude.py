@@ -255,6 +255,9 @@ class Model(Element):
 # Hole ?
 
 def dual(pad, dx, dy, n, name=None):
+    """Create a double row of n pads from a pad template
+    """
+    
     l = []
     n2 = int(n/2)
     dyn = float(dy)*n/2
@@ -273,6 +276,9 @@ def dual(pad, dx, dy, n, name=None):
     return l
 
 def single(pad, dy, n, name=None):
+    """Create a single row of n pads from a pad template
+    """
+    
     l = []
     dyn = float(dy)*n
     for i in range(0, n):
