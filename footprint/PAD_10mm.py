@@ -7,12 +7,12 @@ def footprint():
     reference = Reference()
     reference.y = -s/2-1
     
-    fab = FFab(s, s)
+    fab = FFab(s-0.5, s-0.5)
     fab.corner = 0.4
     
-    crtyd = FCrtYd(s + 0.5, s + 0.5)
+    crtyd = FCrtYd(s, s)
 
-    smd = Smd(1, (s, s))
+    smd = Smd(1, (s-0.5, s-0.5))
     smd.circle()
     smd.layers.remove("F.Mask")
     smd.layers.remove("F.Paste")

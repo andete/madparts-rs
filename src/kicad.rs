@@ -86,7 +86,7 @@ pub fn save(elements: &Vec<Element>, f: &mut fs::File) -> Result<(), MpError> {
             .map(|l| format!("{}", l))
             .collect::<Vec<String>>()
             .join(" ");
-        let shape:&'static str = pad.get_shape().into();
+        let shape:&'static str = pad.shape.clone().into();
         write!(
             f,
             "  (pad {} smd {} (at {} {}) (size {} {}) (layers {}))\n",
@@ -100,10 +100,15 @@ pub fn save(elements: &Vec<Element>, f: &mut fs::File) -> Result<(), MpError> {
             .map(|l| format!("{}", l))
             .collect::<Vec<String>>()
             .join(" ");
+        let pad_type = if pad.plated {
+            "thru_hole"
+        } else {
+            "np_thru_hole"
+        };
         write!(
             f,
-            "  (pad {} thru_hole circle (at {} {}) (size {} {}) (drill {}) (layers {}))\n",
-            pad.name, pad.x, pad.y, pad.dx, pad.dy, pad.drill, layers
+            "  (pad {} {} circle (at {} {}) (size {} {}) (drill {}) (layers {}))\n",
+            pad.name, pad_type, pad.x, pad.y, pad.dx, pad.dy, pad.drill, layers
         )?;
     }
 

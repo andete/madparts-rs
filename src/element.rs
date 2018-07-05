@@ -109,27 +109,15 @@ pub struct Smd {
     pub dx: f64,
     pub dy: f64,
     pub layers: Vec<Layer>,
-    pub shape: Option<SmdShape>,
+    pub shape: SmdShape,
 }
 
-
-impl Smd {
-    pub fn get_shape(&self) -> SmdShape {
-        self.shape.clone().unwrap_or(SmdShape::default())
-    }
-}
 
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum SmdShape {
     Rect,
     Circle,
-}
-
-impl Default for SmdShape {
-    fn default() -> SmdShape {
-        SmdShape::Rect
-    }
 }
 
 impl Into<&'static str> for SmdShape {
@@ -150,6 +138,7 @@ pub struct Pad {
     pub dy: f64,
     pub drill: f64,
     pub layers: Vec<Layer>,
+    pub plated: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -189,7 +178,7 @@ impl TryFrom<String> for Element {
                     let text: Text = serde_json::from_str(&json)?;
                     Ok(Element::Reference(Reference { text }))
                 }
-                "Pad" => {
+                "Pad" | "Hole" => {
                     let r: Pad = serde_json::from_str(&json)?;
                     Ok(Element::Pad(r))
                 }
@@ -363,7 +352,7 @@ impl DrawElement for Smd {
     fn draw_element(&self, cr: &cairo::Context, layer: Layer) {
         if layer == Layer::FCu {
             LAYER[&layer].color.set_source(cr);
-            match self.get_shape() {
+            match self.shape {
                 SmdShape::Rect =>
                     cr.rectangle(
                         self.x - self.dx / 2.0,
@@ -404,9 +393,22 @@ impl DrawElement for Pad {
             cr.set_line_width(0.0);
             cr.arc(self.x, self.y, self.dx / 2.0, 0.0, 360.0);
             cr.fill();
+            // draw drill
+            // draw black circle
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0);
             cr.arc(self.x, self.y, self.drill / 2.0, 0.0, 360.0);
             cr.fill();
+            // draw cross
+            cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+            cr.set_line_width(0.01);
+            cr.move_to(self.x - self.dx / 2.828, self.y - self.dy / 2.828);
+            cr.line_to(self.x + self.dx / 2.828, self.y + self.dy / 2.828);
+            cr.move_to(self.x - self.dx / 2.828, self.y + self.dy / 2.828);
+            cr.line_to(self.x + self.dx / 2.828, self.y - self.dy / 2.828);
+            cr.stroke();
+            cr.arc(self.x, self.y, self.drill / 2.0, 0.0, 360.0);
+            cr.stroke();
+            
             cr.select_font_face(
                 "Sans",
                 cairo::enums::FontSlant::Normal,

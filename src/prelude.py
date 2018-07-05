@@ -228,6 +228,7 @@ class Pad(Element):
         (self.x, self.y) = p
         self.drill = d
         self.layers = ["*.Cu", "*.Mask"]
+        self.plated = True
 
     def at(self, name, x, y):
         """Create a copy of this PTH Pad with a new name and location"""
@@ -238,6 +239,15 @@ class Pad(Element):
         n.y = y
         return n
 
+    def non_plated(self):
+        self.plated = False
+
+class Hole(Pad):
+    def __init__(self, name, s, d, p=(0,0)):
+        Pad.__init__(self, name, s, d, p)
+        self.non_plated()
+    
+        
 class Model(Element):
     """TODO
     """
@@ -255,8 +265,6 @@ class Model(Element):
 # Polygon
 
 # Text
-
-# Hole ?
 
 def dual(pad, dx, dy, n, name=None):
     """Create a double row of n pads from a pad template
