@@ -109,6 +109,36 @@ pub struct Smd {
     pub dx: f64,
     pub dy: f64,
     pub layers: Vec<Layer>,
+    pub shape: Option<SmdShape>,
+}
+
+
+impl Smd {
+    pub fn get_shape(&self) -> SmdShape {
+        self.shape.clone().unwrap_or(SmdShape::default())
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum SmdShape {
+    Rect,
+    Circle,
+}
+
+impl Default for SmdShape {
+    fn default() -> SmdShape {
+        SmdShape::Rect
+    }
+}
+
+impl Into<&'static str> for SmdShape {
+    fn into(self) -> &'static str {
+        match self {
+            SmdShape::Rect => "rect",
+            SmdShape::Circle => "circle",
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -333,12 +363,20 @@ impl DrawElement for Smd {
     fn draw_element(&self, cr: &cairo::Context, layer: Layer) {
         if layer == Layer::FCu {
             LAYER[&layer].color.set_source(cr);
-            cr.rectangle(
-                self.x - self.dx / 2.0,
-                self.y - self.dy / 2.0,
-                self.dx,
-                self.dy,
-            );
+            match self.get_shape() {
+                SmdShape::Rect =>
+                    cr.rectangle(
+                        self.x - self.dx / 2.0,
+                        self.y - self.dy / 2.0,
+                        self.dx,
+                        self.dy,
+                    ),
+                SmdShape::Circle => {
+                    cr.stroke();
+                    cr.set_line_width(0.0);
+                    cr.arc(self.x, self.y, self.dx / 2.0, 0.0, 360.0);
+                },
+            };
             cr.fill();
             cr.select_font_face(
                 "Sans",

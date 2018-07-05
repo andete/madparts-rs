@@ -188,6 +188,7 @@ class Smd(Element):
         (self.dx, self.dy) = s
         (self.x, self.y) = p
         self.layers = ["F.Cu", "F.Paste", "F.Mask"]
+        self.shape = "rect"
 
     def at(self, name, x, y):
         """Create a copy of this SMD Pad with a new name and location"""
@@ -197,6 +198,9 @@ class Smd(Element):
         n.x = x
         n.y = y
         return n
+
+    def circle(self):
+        self.shape = "circle"
 
 class Pad(Element):
     """PTH Pad Element

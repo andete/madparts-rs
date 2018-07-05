@@ -86,10 +86,11 @@ pub fn save(elements: &Vec<Element>, f: &mut fs::File) -> Result<(), MpError> {
             .map(|l| format!("{}", l))
             .collect::<Vec<String>>()
             .join(" ");
+        let shape:&'static str = pad.get_shape().into();
         write!(
             f,
-            "  (pad {} smd rect (at {} {}) (size {} {}) (layers {}))\n",
-            pad.name, pad.x, pad.y, pad.dx, pad.dy, layers
+            "  (pad {} smd {} (at {} {}) (size {} {}) (layers {}))\n",
+            pad.name, shape, pad.x, pad.y, pad.dx, pad.dy, layers
         )?;
     }
 
