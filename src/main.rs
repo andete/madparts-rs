@@ -1,6 +1,6 @@
 // (c) 2016-2018 Joost Yervante Damad <joost@damad.be>
 
-#![feature(proc_macro, specialization, const_fn, try_from)]
+#![feature(specialization, const_fn, try_from)]
 
 extern crate cairo;
 extern crate chrono;
